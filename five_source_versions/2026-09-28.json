@@ -1,8 +1,8 @@
 {
   "product": "FIVE_SOURCE_AUTO_V0.1",
   "d0": "2026-09-28",
-  "generated_at": "2026-10-02T23:34:37.326278+08:00",
-  "version_id": "2026-09-28-c805046589183492",
+  "generated_at": "2026-10-03T00:14:23.039143+08:00",
+  "version_id": "2026-09-28-09263aa12a4533b0",
   "five_source_status": "FAIL",
   "mode": "RESEARCH_CANDIDATE",
   "continuity_status": "PASS",
@@ -24,10 +24,34 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 38.35148756299789,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
           "rank": 1
+        },
+        {
+          "code": "600825",
+          "name": "新华传媒",
+          "price": 8.55,
+          "day_pct": 10.038610038610063,
+          "prev_close": 9.41,
+          "day_high": 10.35,
+          "day_low": 10.35,
+          "turnover": 1.34,
+          "amount": 144750000.0,
+          "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
+          "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
+          "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
+          "period_pct": 33.177570093457966,
+          "price_date": "2026-09-28",
+          "name_metadata_asof": "2026-09-30",
+          "rank": 2
         },
         {
           "code": "603949",
@@ -42,10 +66,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 33.16618911174785,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 2
+          "rank": 3
         },
         {
           "code": "603396",
@@ -60,10 +87,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 33.10696095076402,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 3
+          "rank": 4
         },
         {
           "code": "600802",
@@ -78,10 +108,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 33.089579524680076,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 4
+          "rank": 5
         },
         {
           "code": "301699",
@@ -96,10 +129,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 32.03505355404091,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 5
+          "rank": 6
         },
         {
           "code": "002614",
@@ -114,10 +150,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 23.546511627906973,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 6
+          "rank": 7
         },
         {
           "code": "301190",
@@ -132,10 +171,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 21.945259042033214,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 7
+          "rank": 8
         },
         {
           "code": "000850",
@@ -150,10 +192,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 21.513002364066168,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 8
+          "rank": 9
         },
         {
           "code": "002119",
@@ -168,10 +213,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 21.413976297507165,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 9
+          "rank": 10
         },
         {
           "code": "300192",
@@ -186,10 +234,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 21.100917431192666,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 10
+          "rank": 11
         },
         {
           "code": "603373",
@@ -204,10 +255,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 20.871559633027537,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 11
+          "rank": 12
         },
         {
           "code": "001368",
@@ -222,10 +276,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 19.977037887485636,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 12
+          "rank": 13
         },
         {
           "code": "000678",
@@ -240,10 +297,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 19.79752530933634,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 13
+          "rank": 14
         },
         {
           "code": "603278",
@@ -258,10 +318,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 18.98454746136864,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 14
+          "rank": 15
         },
         {
           "code": "301311",
@@ -276,10 +339,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 18.831168831168842,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 15
+          "rank": 16
         },
         {
           "code": "002082",
@@ -294,10 +360,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ST",
+          "market_universe": "YES",
           "period_pct": 18.705035971223015,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 16
+          "rank": 17
         },
         {
           "code": "600418",
@@ -312,10 +381,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 18.29268292682926,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 17
+          "rank": 18
         },
         {
           "code": "688056",
@@ -330,10 +402,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 17.664399092970527,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 18
+          "rank": 19
         },
         {
           "code": "605366",
@@ -348,10 +423,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 17.633410672853845,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 19
+          "rank": 20
         },
         {
           "code": "300300",
@@ -366,10 +444,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 17.248677248677268,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 20
+          "rank": 21
         },
         {
           "code": "688656",
@@ -384,10 +465,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 17.127541904194675,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 21
+          "rank": 22
         },
         {
           "code": "600293",
@@ -402,10 +486,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 16.964285714285722,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 22
+          "rank": 23
         },
         {
           "code": "300599",
@@ -420,10 +507,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 16.1544523246651,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 23
+          "rank": 24
         },
         {
           "code": "600699",
@@ -438,10 +528,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 15.48076923076922,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 24
+          "rank": 25
         },
         {
           "code": "001330",
@@ -456,10 +549,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 15.21739130434785,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 25
+          "rank": 26
         },
         {
           "code": "600340",
@@ -474,10 +570,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ST",
+          "market_universe": "YES",
           "period_pct": 15.17857142857142,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 26
+          "rank": 27
         },
         {
           "code": "601218",
@@ -492,10 +591,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 15.019011406844118,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 27
+          "rank": 28
         },
         {
           "code": "688512",
@@ -510,10 +612,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 14.96881496881497,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 28
+          "rank": 29
         },
         {
           "code": "301560",
@@ -528,10 +633,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 14.7560975609756,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 29
+          "rank": 30
         },
         {
           "code": "002935",
@@ -546,10 +654,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 14.626490897677357,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 30
+          "rank": 31
         },
         {
           "code": "688171",
@@ -564,10 +675,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 14.569536423841068,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 31
+          "rank": 32
         },
         {
           "code": "920015",
@@ -582,10 +696,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 13.795771015987635,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 32
+          "rank": 33
         },
         {
           "code": "688244",
@@ -600,10 +717,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 13.727742676622622,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 33
+          "rank": 34
         },
         {
           "code": "603073",
@@ -618,10 +738,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 13.59447004608294,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 34
+          "rank": 35
         },
         {
           "code": "000513",
@@ -636,10 +759,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 13.420560747663558,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 35
+          "rank": 36
         },
         {
           "code": "600843",
@@ -654,10 +780,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 13.294797687861282,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 36
+          "rank": 37
         },
         {
           "code": "002819",
@@ -672,10 +801,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 13.294010889292185,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 37
+          "rank": 38
         },
         {
           "code": "002638",
@@ -690,10 +822,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 12.993039443155464,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 38
+          "rank": 39
         },
         {
           "code": "000498",
@@ -708,10 +843,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 12.941176470588234,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 39
+          "rank": 40
         },
         {
           "code": "603937",
@@ -726,10 +864,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 12.722646310432562,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 40
+          "rank": 41
         },
         {
           "code": "600641",
@@ -744,10 +885,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 12.505715592135335,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 41
+          "rank": 42
         },
         {
           "code": "688678",
@@ -762,10 +906,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 12.446043165467625,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 42
+          "rank": 43
         },
         {
           "code": "600207",
@@ -780,10 +927,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 12.345679012345666,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 43
+          "rank": 44
         },
         {
           "code": "300647",
@@ -798,10 +948,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 12.131919905771493,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 44
+          "rank": 45
         },
         {
           "code": "300301",
@@ -816,10 +969,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX,ST",
+          "market_universe": "YES",
           "period_pct": 11.884057971014483,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 45
+          "rank": 46
         },
         {
           "code": "000739",
@@ -834,10 +990,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 11.708333333333321,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 46
+          "rank": 47
         },
         {
           "code": "601579",
@@ -852,10 +1011,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 11.692471970101458,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 47
+          "rank": 48
         },
         {
           "code": "920982",
@@ -870,10 +1032,13 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 11.389422237737822,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
-          "rank": 48
+          "rank": 49
         },
         {
           "code": "301218",
@@ -888,25 +1053,10 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 11.320359907930545,
-          "price_date": "2026-09-28",
-          "name_metadata_asof": "2026-09-30",
-          "rank": 49
-        },
-        {
-          "code": "300569",
-          "name": "天能重工",
-          "price": 5.5,
-          "day_pct": 4.166666666666652,
-          "prev_close": 5.36,
-          "day_high": 5.45,
-          "day_low": 5.19,
-          "turnover": 4.54,
-          "amount": 244530000.0,
-          "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
-          "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
-          "primary_source": "PASS",
-          "period_pct": 11.111111111111116,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
           "rank": 50
@@ -926,6 +1076,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 49.64788732394367,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -944,6 +1097,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 38.8101983002833,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -962,6 +1118,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ST",
+          "market_universe": "YES",
           "period_pct": 37.931034482758605,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -980,6 +1139,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 36.959459459459445,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -998,6 +1160,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 35.07936507936507,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1016,6 +1181,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 34.36123348017623,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1034,6 +1202,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 34.21362269577723,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1052,6 +1223,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 34.030281182408075,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1070,6 +1244,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 33.995703544575704,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1088,6 +1265,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 33.23741007194243,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1106,6 +1286,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 32.40924092409241,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1124,6 +1307,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 31.930294906166235,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1142,6 +1328,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 31.816301199834495,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1160,6 +1349,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 31.012987012987004,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1178,6 +1370,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 30.22740994163815,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1196,6 +1391,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 29.334545087347273,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1214,6 +1412,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 29.230014713094654,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1232,6 +1433,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 28.81355932203389,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1250,6 +1454,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 28.293736501079934,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1268,6 +1475,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 28.212162780064,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1286,6 +1496,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 27.991584115017098,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1304,6 +1517,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 27.93103448275862,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1322,6 +1538,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 27.405602923264304,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1340,6 +1559,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 27.11241734019103,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1358,6 +1580,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 26.82926829268293,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1376,6 +1601,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 26.68950482715664,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1394,6 +1622,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 26.661264181523503,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1412,6 +1643,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 24.52830188679245,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1430,6 +1664,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 24.493243243243246,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1448,6 +1685,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 24.025157232704398,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1466,6 +1706,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 23.557692307692292,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1484,6 +1727,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 23.476523476523468,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1502,6 +1748,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 23.293768545994077,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1520,6 +1769,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 22.70040198628518,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1538,6 +1790,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 22.636103151862464,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1556,6 +1811,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 22.539261225392604,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1574,6 +1832,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 22.2737819025522,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1592,6 +1853,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 21.951764180437692,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1610,6 +1874,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 21.86683069352606,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1628,6 +1895,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 21.43999999999999,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1646,6 +1916,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 21.179577464788736,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1664,6 +1937,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 20.210896309314585,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1682,6 +1958,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 20.076117982873456,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1700,6 +1979,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 20.05813953488371,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1718,6 +2000,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 20.000000000000018,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1736,6 +2021,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 19.811320754716988,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1754,6 +2042,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 19.70802919708028,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1772,6 +2063,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 19.70185334407737,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1790,6 +2084,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 19.631212053069504,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1808,6 +2105,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 19.395203336809175,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1828,6 +2128,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 100.12500000000001,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1846,6 +2149,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 92.97052154195009,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1864,6 +2170,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 92.58241758241756,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1882,6 +2191,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 77.28813559322035,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1900,6 +2212,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 67.89491641078132,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1918,6 +2233,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 65.3731343283582,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1936,6 +2254,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 62.65385770039027,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1954,6 +2275,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 61.198738170347,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1972,6 +2296,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 60.40624999999999,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -1990,6 +2317,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 58.42600513259195,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2008,6 +2338,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 57.752566180443,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2026,6 +2359,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 56.596409055425426,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2044,6 +2380,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 56.22119815668203,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2062,6 +2401,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 54.54545454545454,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2080,6 +2422,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 53.51969504447267,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2098,6 +2443,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 53.39449541284402,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2116,6 +2464,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 53.16021558059776,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2134,6 +2485,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 48.55769230769229,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2152,6 +2506,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ST",
+          "market_universe": "YES",
           "period_pct": 46.993318485523375,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2170,6 +2527,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 46.407506702412874,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2188,6 +2548,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 45.72490706319705,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2206,6 +2569,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 45.138888888888864,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2224,6 +2590,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX,ST",
+          "market_universe": "YES",
           "period_pct": 44.9046811058988,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2242,6 +2611,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 44.888888888888886,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2260,6 +2632,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 44.5255474452555,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2278,6 +2653,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 43.26008527386029,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2296,6 +2674,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 42.97994269340975,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2314,6 +2695,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 42.82655246252678,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2332,6 +2716,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 42.62728675336125,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2350,6 +2737,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 42.05128205128206,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2368,6 +2758,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 40.66620402498265,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2386,6 +2779,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 40.135593220339,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2404,6 +2800,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 39.36213161081954,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2422,6 +2821,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 39.126637554585166,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2440,6 +2842,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 38.51923542221147,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2458,6 +2863,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 38.51132686084144,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2476,6 +2884,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 38.25983313468413,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2494,6 +2905,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 37.31501057082451,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2512,6 +2926,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 36.650868878357045,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2530,6 +2947,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 36.585365853658544,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2548,6 +2968,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 36.577608142493624,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2566,6 +2989,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 36.5003006614552,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2584,6 +3010,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 36.35724331926866,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2602,6 +3031,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 35.9912216532553,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2620,6 +3052,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "NO",
+          "account_reason": "ACCOUNT_PREFIX",
+          "market_universe": "YES",
           "period_pct": 35.92677345537758,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2638,6 +3073,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 35.88679245283017,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2656,6 +3094,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 35.763888888888886,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2674,6 +3115,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 35.4014598540146,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2692,6 +3136,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 34.72418670438473,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2710,6 +3157,9 @@
           "source_timestamp": "2026-09-28 (DAILY_CLOSE; exact tick time UNKNOWN)",
           "quote_source": "HISTORICAL_UNADJUSTED_DAILY_CLOSE",
           "primary_source": "PASS",
+          "account_eligible": "YES",
+          "account_reason": "NONE",
+          "market_universe": "YES",
           "period_pct": 34.54174112841459,
           "price_date": "2026-09-28",
           "name_metadata_asof": "2026-09-30",
@@ -2729,25 +3179,17 @@
         "002731",
         "002860",
         "300082",
-        "300096",
         "300211",
         "300585",
         "301139",
-        "301390",
-        "301686",
         "301716",
-        "600301",
-        "600825",
         "601059",
-        "601091",
         "601198",
         "601238",
         "601995",
-        "603159",
         "603400",
         "605303",
         "688496",
-        "688837",
         "920025",
         "920298",
         "920201",
@@ -2760,25 +3202,19 @@
         "002731",
         "002860",
         "300082",
-        "300096",
         "300211",
-        "300585",
         "301139",
-        "301390",
         "301686",
         "301716",
         "600301",
         "600825",
         "601059",
-        "601091",
         "601198",
         "601238",
         "601995",
-        "603159",
         "603400",
         "605303",
         "688496",
-        "688837",
         "920025",
         "920298",
         "920201",
@@ -2792,21 +3228,17 @@
         "002860",
         "002870",
         "300082",
-        "300096",
         "300211",
-        "300585",
         "301139",
         "301390",
         "301686",
         "301716",
-        "600301",
         "600825",
         "600929",
         "601059",
         "601091",
         "601198",
         "601238",
-        "601995",
         "603159",
         "603400",
         "605303",
@@ -4333,7 +4765,7 @@
         "name": "万邦医药",
         "first_entry_date": "2026-09-17",
         "entry_date_basis": "REPLAY_FIRST_SEEN_FROM_EMPTY_SEED",
-        "last_common_certification_date": "2026-09-21",
+        "last_common_certification_date": "2026-09-17",
         "close": 72.02,
         "ma20": 66.6815,
         "pool_status": "CURRENT",
@@ -4899,7 +5331,27 @@
     "seed_complete": false,
     "status": "PARTIAL",
     "entry_ledger": {
+      "300852": {
+        "first_entry_date": "2026-09-14",
+        "last_common_certification_date": "2026-09-14"
+      },
       "000823": {
+        "first_entry_date": "2026-09-14",
+        "last_common_certification_date": "2026-09-16"
+      },
+      "002912": {
+        "first_entry_date": "2026-09-14",
+        "last_common_certification_date": "2026-09-15"
+      },
+      "600876": {
+        "first_entry_date": "2026-09-14",
+        "last_common_certification_date": "2026-09-14"
+      },
+      "605058": {
+        "first_entry_date": "2026-09-14",
+        "last_common_certification_date": "2026-09-23"
+      },
+      "301132": {
         "first_entry_date": "2026-09-14",
         "last_common_certification_date": "2026-09-16"
       },
@@ -4907,35 +5359,35 @@
         "first_entry_date": "2026-09-14",
         "last_common_certification_date": "2026-09-14"
       },
-      "000978": {
+      "300290": {
         "first_entry_date": "2026-09-14",
         "last_common_certification_date": "2026-09-14"
       },
-      "002201": {
-        "first_entry_date": "2026-09-14",
-        "last_common_certification_date": "2026-09-14"
-      },
-      "002912": {
+      "002815": {
         "first_entry_date": "2026-09-14",
         "last_common_certification_date": "2026-09-15"
       },
-      "301132": {
-        "first_entry_date": "2026-09-14",
-        "last_common_certification_date": "2026-09-16"
-      },
-      "000980": {
+      "301528": {
         "first_entry_date": "2026-09-14",
         "last_common_certification_date": "2026-09-15"
+      },
+      "000993": {
+        "first_entry_date": "2026-09-14",
+        "last_common_certification_date": "2026-09-17"
       },
       "600180": {
         "first_entry_date": "2026-09-14",
         "last_common_certification_date": "2026-09-14"
       },
-      "600876": {
+      "000980": {
+        "first_entry_date": "2026-09-14",
+        "last_common_certification_date": "2026-09-15"
+      },
+      "002201": {
         "first_entry_date": "2026-09-14",
         "last_common_certification_date": "2026-09-14"
       },
-      "300852": {
+      "000978": {
         "first_entry_date": "2026-09-14",
         "last_common_certification_date": "2026-09-14"
       },
@@ -4943,47 +5395,11 @@
         "first_entry_date": "2026-09-14",
         "last_common_certification_date": "2026-09-14"
       },
-      "300290": {
-        "first_entry_date": "2026-09-14",
-        "last_common_certification_date": "2026-09-14"
-      },
-      "000993": {
-        "first_entry_date": "2026-09-14",
-        "last_common_certification_date": "2026-09-17"
-      },
-      "301528": {
-        "first_entry_date": "2026-09-14",
-        "last_common_certification_date": "2026-09-15"
-      },
-      "002815": {
-        "first_entry_date": "2026-09-14",
-        "last_common_certification_date": "2026-09-15"
-      },
-      "605058": {
-        "first_entry_date": "2026-09-14",
-        "last_common_certification_date": "2026-09-23"
-      },
-      "301251": {
-        "first_entry_date": "2026-09-15",
-        "last_common_certification_date": "2026-09-16"
-      },
       "603186": {
         "first_entry_date": "2026-09-15",
         "last_common_certification_date": "2026-09-15"
       },
-      "603936": {
-        "first_entry_date": "2026-09-15",
-        "last_common_certification_date": "2026-09-15"
-      },
       "002560": {
-        "first_entry_date": "2026-09-15",
-        "last_common_certification_date": "2026-09-15"
-      },
-      "688813": {
-        "first_entry_date": "2026-09-15",
-        "last_common_certification_date": "2026-09-15"
-      },
-      "000056": {
         "first_entry_date": "2026-09-15",
         "last_common_certification_date": "2026-09-15"
       },
@@ -4995,11 +5411,27 @@
         "first_entry_date": "2026-09-15",
         "last_common_certification_date": "2026-09-15"
       },
-      "688004": {
-        "first_entry_date": "2026-09-16",
-        "last_common_certification_date": "2026-09-18"
+      "603936": {
+        "first_entry_date": "2026-09-15",
+        "last_common_certification_date": "2026-09-15"
+      },
+      "301251": {
+        "first_entry_date": "2026-09-15",
+        "last_common_certification_date": "2026-09-16"
+      },
+      "688813": {
+        "first_entry_date": "2026-09-15",
+        "last_common_certification_date": "2026-09-15"
+      },
+      "000056": {
+        "first_entry_date": "2026-09-15",
+        "last_common_certification_date": "2026-09-15"
       },
       "688625": {
+        "first_entry_date": "2026-09-16",
+        "last_common_certification_date": "2026-09-16"
+      },
+      "300903": {
         "first_entry_date": "2026-09-16",
         "last_common_certification_date": "2026-09-16"
       },
@@ -5011,21 +5443,21 @@
         "first_entry_date": "2026-09-16",
         "last_common_certification_date": "2026-09-16"
       },
+      "688004": {
+        "first_entry_date": "2026-09-16",
+        "last_common_certification_date": "2026-09-18"
+      },
       "301183": {
         "first_entry_date": "2026-09-16",
         "last_common_certification_date": "2026-09-16"
       },
-      "300903": {
-        "first_entry_date": "2026-09-16",
-        "last_common_certification_date": "2026-09-16"
-      },
-      "003026": {
+      "603230": {
         "first_entry_date": "2026-09-17",
-        "last_common_certification_date": "2026-09-18"
+        "last_common_certification_date": "2026-09-24"
       },
-      "300243": {
+      "300829": {
         "first_entry_date": "2026-09-17",
-        "last_common_certification_date": "2026-09-18"
+        "last_common_certification_date": "2026-09-23"
       },
       "001326": {
         "first_entry_date": "2026-09-17",
@@ -5035,45 +5467,41 @@
         "first_entry_date": "2026-09-17",
         "last_common_certification_date": "2026-09-18"
       },
-      "300741": {
+      "300243": {
         "first_entry_date": "2026-09-17",
-        "last_common_certification_date": "2026-09-17"
-      },
-      "300829": {
-        "first_entry_date": "2026-09-17",
-        "last_common_certification_date": "2026-09-23"
-      },
-      "688137": {
-        "first_entry_date": "2026-09-17",
-        "last_common_certification_date": "2026-09-23"
-      },
-      "301520": {
-        "first_entry_date": "2026-09-17",
-        "last_common_certification_date": "2026-09-21"
-      },
-      "601579": {
-        "first_entry_date": "2026-09-17",
-        "last_common_certification_date": "2026-09-28"
-      },
-      "603230": {
-        "first_entry_date": "2026-09-17",
-        "last_common_certification_date": "2026-09-24"
-      },
-      "001216": {
-        "first_entry_date": "2026-09-17",
-        "last_common_certification_date": "2026-09-24"
+        "last_common_certification_date": "2026-09-18"
       },
       "300939": {
         "first_entry_date": "2026-09-17",
         "last_common_certification_date": "2026-09-21"
       },
-      "601218": {
+      "688137": {
+        "first_entry_date": "2026-09-17",
+        "last_common_certification_date": "2026-09-23"
+      },
+      "001216": {
+        "first_entry_date": "2026-09-17",
+        "last_common_certification_date": "2026-09-24"
+      },
+      "301520": {
         "first_entry_date": "2026-09-17",
         "last_common_certification_date": "2026-09-17"
       },
-      "603248": {
-        "first_entry_date": "2026-09-18",
+      "601579": {
+        "first_entry_date": "2026-09-17",
+        "last_common_certification_date": "2026-09-28"
+      },
+      "300741": {
+        "first_entry_date": "2026-09-17",
+        "last_common_certification_date": "2026-09-17"
+      },
+      "003026": {
+        "first_entry_date": "2026-09-17",
         "last_common_certification_date": "2026-09-18"
+      },
+      "601218": {
+        "first_entry_date": "2026-09-17",
+        "last_common_certification_date": "2026-09-17"
       },
       "688785": {
         "first_entry_date": "2026-09-18",
@@ -5083,19 +5511,23 @@
         "first_entry_date": "2026-09-18",
         "last_common_certification_date": "2026-09-21"
       },
+      "603248": {
+        "first_entry_date": "2026-09-18",
+        "last_common_certification_date": "2026-09-18"
+      },
       "300464": {
         "first_entry_date": "2026-09-18",
         "last_common_certification_date": "2026-09-22"
       },
-      "688222": {
+      "301230": {
         "first_entry_date": "2026-09-21",
         "last_common_certification_date": "2026-09-21"
       },
-      "688315": {
-        "first_entry_date": "2026-09-21",
-        "last_common_certification_date": "2026-09-23"
-      },
       "002285": {
+        "first_entry_date": "2026-09-21",
+        "last_common_certification_date": "2026-09-21"
+      },
+      "688222": {
         "first_entry_date": "2026-09-21",
         "last_common_certification_date": "2026-09-21"
       },
@@ -5103,21 +5535,29 @@
         "first_entry_date": "2026-09-21",
         "last_common_certification_date": "2026-09-24"
       },
-      "301230": {
+      "688315": {
         "first_entry_date": "2026-09-21",
-        "last_common_certification_date": "2026-09-21"
+        "last_common_certification_date": "2026-09-23"
       },
       "601811": {
         "first_entry_date": "2026-09-21",
         "last_common_certification_date": "2026-09-24"
       },
-      "000504": {
+      "301047": {
         "first_entry_date": "2026-09-22",
         "last_common_certification_date": "2026-09-24"
       },
-      "920427": {
+      "301234": {
         "first_entry_date": "2026-09-22",
         "last_common_certification_date": "2026-09-22"
+      },
+      "600630": {
+        "first_entry_date": "2026-09-22",
+        "last_common_certification_date": "2026-09-22"
+      },
+      "000504": {
+        "first_entry_date": "2026-09-22",
+        "last_common_certification_date": "2026-09-24"
       },
       "300691": {
         "first_entry_date": "2026-09-22",
@@ -5127,19 +5567,11 @@
         "first_entry_date": "2026-09-22",
         "last_common_certification_date": "2026-09-24"
       },
-      "301047": {
+      "920427": {
         "first_entry_date": "2026-09-22",
-        "last_common_certification_date": "2026-09-24"
+        "last_common_certification_date": "2026-09-22"
       },
       "300110": {
-        "first_entry_date": "2026-09-22",
-        "last_common_certification_date": "2026-09-22"
-      },
-      "600630": {
-        "first_entry_date": "2026-09-22",
-        "last_common_certification_date": "2026-09-22"
-      },
-      "301234": {
         "first_entry_date": "2026-09-22",
         "last_common_certification_date": "2026-09-22"
       },
@@ -5147,11 +5579,7 @@
         "first_entry_date": "2026-09-23",
         "last_common_certification_date": "2026-09-24"
       },
-      "688105": {
-        "first_entry_date": "2026-09-23",
-        "last_common_certification_date": "2026-09-23"
-      },
-      "301122": {
+      "688662": {
         "first_entry_date": "2026-09-23",
         "last_common_certification_date": "2026-09-24"
       },
@@ -5159,11 +5587,7 @@
         "first_entry_date": "2026-09-23",
         "last_common_certification_date": "2026-09-24"
       },
-      "688337": {
-        "first_entry_date": "2026-09-23",
-        "last_common_certification_date": "2026-09-24"
-      },
-      "001234": {
+      "301122": {
         "first_entry_date": "2026-09-23",
         "last_common_certification_date": "2026-09-24"
       },
@@ -5175,7 +5599,11 @@
         "first_entry_date": "2026-09-23",
         "last_common_certification_date": "2026-09-24"
       },
-      "688662": {
+      "001234": {
+        "first_entry_date": "2026-09-23",
+        "last_common_certification_date": "2026-09-24"
+      },
+      "688337": {
         "first_entry_date": "2026-09-23",
         "last_common_certification_date": "2026-09-24"
       },
@@ -5183,17 +5611,9 @@
         "first_entry_date": "2026-09-23",
         "last_common_certification_date": "2026-09-28"
       },
-      "301689": {
-        "first_entry_date": "2026-09-24",
-        "last_common_certification_date": "2026-09-28"
-      },
-      "300684": {
-        "first_entry_date": "2026-09-24",
-        "last_common_certification_date": "2026-09-24"
-      },
-      "688056": {
-        "first_entry_date": "2026-09-24",
-        "last_common_certification_date": "2026-09-24"
+      "688105": {
+        "first_entry_date": "2026-09-23",
+        "last_common_certification_date": "2026-09-23"
       },
       "300192": {
         "first_entry_date": "2026-09-24",
@@ -5203,11 +5623,39 @@
         "first_entry_date": "2026-09-24",
         "last_common_certification_date": "2026-09-24"
       },
+      "301689": {
+        "first_entry_date": "2026-09-24",
+        "last_common_certification_date": "2026-09-28"
+      },
+      "688056": {
+        "first_entry_date": "2026-09-24",
+        "last_common_certification_date": "2026-09-24"
+      },
+      "300684": {
+        "first_entry_date": "2026-09-24",
+        "last_common_certification_date": "2026-09-24"
+      },
       "002614": {
         "first_entry_date": "2026-09-24",
         "last_common_certification_date": "2026-09-28"
       },
-      "600802": {
+      "603396": {
+        "first_entry_date": "2026-09-28",
+        "last_common_certification_date": "2026-09-28"
+      },
+      "603949": {
+        "first_entry_date": "2026-09-28",
+        "last_common_certification_date": "2026-09-28"
+      },
+      "001368": {
+        "first_entry_date": "2026-09-28",
+        "last_common_certification_date": "2026-09-28"
+      },
+      "688244": {
+        "first_entry_date": "2026-09-28",
+        "last_common_certification_date": "2026-09-28"
+      },
+      "603373": {
         "first_entry_date": "2026-09-28",
         "last_common_certification_date": "2026-09-28"
       },
@@ -5219,27 +5667,11 @@
         "first_entry_date": "2026-09-28",
         "last_common_certification_date": "2026-09-28"
       },
-      "603396": {
-        "first_entry_date": "2026-09-28",
-        "last_common_certification_date": "2026-09-28"
-      },
-      "688244": {
-        "first_entry_date": "2026-09-28",
-        "last_common_certification_date": "2026-09-28"
-      },
       "301699": {
         "first_entry_date": "2026-09-28",
         "last_common_certification_date": "2026-09-28"
       },
-      "001368": {
-        "first_entry_date": "2026-09-28",
-        "last_common_certification_date": "2026-09-28"
-      },
-      "603949": {
-        "first_entry_date": "2026-09-28",
-        "last_common_certification_date": "2026-09-28"
-      },
-      "603373": {
+      "600802": {
         "first_entry_date": "2026-09-28",
         "last_common_certification_date": "2026-09-28"
       }
@@ -5248,54 +5680,25 @@
   },
   "price_mode": "UNADJUSTED_DAILY_CLOSE",
   "manual_pool_comparison": "NOT_VERIFIED",
-  "history_data_gap": {
-    "002860": "ConnectionError",
-    "002731": "ConnectionError",
-    "001246": "ReadTimeout",
-    "300096": "ConnectionError",
-    "300082": "ConnectionError",
-    "300585": "ConnectionError",
-    "000016": "ConnectionError",
-    "301139": "ConnectionError",
-    "301686": "ConnectionError",
-    "301716": "ConnectionError",
-    "600301": "ConnectionError",
-    "601059": "ConnectionError",
-    "600825": "ConnectionError",
-    "301390": "ConnectionError",
-    "601238": "ConnectionError",
-    "601091": "ConnectionError",
-    "601995": "ConnectionError",
-    "601198": "ConnectionError",
-    "688496": "ConnectionError",
-    "605303": "ConnectionError",
-    "688837": "ConnectionError",
-    "603159": "ConnectionError",
-    "920025": "ConnectionError",
-    "603400": "ConnectionError",
-    "920202": "ConnectionError",
-    "920298": "ConnectionError",
-    "920201": "ConnectionError",
-    "920229": "ConnectionError"
-  },
+  "history_data_gap": {},
   "limit_up_feed_errors": {
-    "2026-08-19": "ValueError",
-    "2026-08-17": "ValueError",
-    "2026-08-21": "ValueError",
-    "2026-08-24": "ValueError",
-    "2026-08-26": "ValueError",
-    "2026-08-25": "ValueError",
-    "2026-08-28": "ValueError",
-    "2026-08-31": "ValueError",
-    "2026-08-27": "ValueError",
-    "2026-09-01": "ValueError",
-    "2026-09-02": "ValueError",
-    "2026-09-03": "ValueError",
-    "2026-09-04": "ValueError",
     "2026-08-20": "ValueError",
+    "2026-08-21": "ValueError",
+    "2026-08-19": "ValueError",
+    "2026-08-18": "ValueError",
+    "2026-08-24": "ValueError",
+    "2026-08-25": "ValueError",
+    "2026-08-26": "ValueError",
+    "2026-08-17": "ValueError",
+    "2026-08-27": "ValueError",
+    "2026-08-31": "ValueError",
+    "2026-09-03": "ValueError",
+    "2026-09-02": "ValueError",
+    "2026-08-28": "ValueError",
+    "2026-09-01": "ValueError",
     "2026-09-07": "ValueError",
-    "2026-09-08": "ValueError",
-    "2026-08-18": "ValueError"
+    "2026-09-04": "ValueError",
+    "2026-09-08": "ValueError"
   },
   "limit_up_source_trace": {
     "2026-09-09": {
