@@ -11,6 +11,8 @@ import sys
 import time
 import threading
 import hashlib
+import html
+import queue
 from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
 from datetime import datetime, timedelta, time as clock_time
 from pathlib import Path
@@ -255,7 +257,7 @@ def sina_universe(progress=None):
             for x in rows if allowed(x["symbol"][2:], x["name"])]
 
 
-def filter_top(df):
+def filter_basic(df):
     """边界包含3、5、50、200；量比严格大于1；缺值自动排除。"""
     if df.empty:
         return pd.DataFrame(columns=COLS)
@@ -266,7 +268,110 @@ def filter_top(df):
     d = d.dropna(subset=COLS[2:7])
     return d[d["涨幅%"].between(3, 5) & (d["量比"] > 1) &
              d["换手率%"].between(5, 10) & d["流通市值亿"].between(50, 200)].sort_values(
-                 ["量比", "代码"], ascending=[False, True]).head(5).reset_index(drop=True)
+                 ["量比", "代码"], ascending=[False, True]).reset_index(drop=True)
+
+
+def filter_top(df):
+    return filter_basic(df).head(5).reset_index(drop=True)
+
+
+def stock_symbol(code):
+    return ("sh" if str(code).startswith(("6", "9")) else "sz") + str(code)
+
+
+def history_tx(symbol, end_day, adjust):
+    """腾讯日K线。保留原始价计算9.8%阈值，用前复权价格计算均线。
+    查询终点限定到行情日，不将之后交易日混入技术指标。
+    """
+    for host in ("https://web.ifzq.gtimg.cn/appstock/app/fqkline/get",
+                 "https://proxy.finance.qq.com/ifzqgtimg/appstock/app/newfqkline/get"):
+        try:
+            def fetch():
+                res = http_get(host, params={"param": f"{symbol},day,,{end_day},100,{adjust}"}, timeout=(4, 8))
+                res.raise_for_status()
+                data = res.json()["data"][symbol]
+                field = "qfqday" if adjust == "qfq" else "day"
+                values = data.get(field)
+                if not values:
+                    raise ValueError("历史日线为空或缺少指定复权字段")
+                d = pd.DataFrame([x[:6] for x in values], columns=["date", "open", "close", "high", "low", "volume"])
+                for col in ["open", "close", "high", "low", "volume"]:
+                    d[col] = pd.to_numeric(d[col], errors="coerce")
+                d = d[d.date <= end_day].drop_duplicates("date").sort_values("date").reset_index(drop=True)
+                if d.empty or d[["open", "close", "high", "low", "volume"]].isna().any().any():
+                    raise ValueError("历史日线字段不完整")
+                return d
+            return retry(fetch, attempts=2)
+        except Exception:
+            continue
+    raise RuntimeError("历史K线连接失败")
+
+
+class HistoryCache:
+    """技术分析只下载通过基本条件的股票；缓存原始/前复权历史1小时。"""
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.data = {}
+
+    def load(self, symbol, day):
+        key = (symbol, day)
+        with self.lock:
+            entry = self.data.get(key)
+            if entry and time.monotonic()-entry[0] < 3600:
+                return {k: v.copy() for k, v in entry[1].items()}
+        data = {"raw": history_tx(symbol, day, ""), "qfq": history_tx(symbol, day, "qfq")}
+        with self.lock:
+            # 限制缓存条数，避免免费云实例长期运行占满内存。
+            if len(self.data) >= 1500:
+                self.data.pop(next(iter(self.data)))
+            self.data[key] = (time.monotonic(), data)
+        return {k: v.copy() for k, v in data.items()}
+
+
+def technical_metrics(raw, adjusted, day, price, trading_dates):
+    """过去4日不含D0。必须覆盖上证指数最近19个市场交易日；
+    停牌/新股等缺少日线时不拿更早的交易记录冒充对应市场交易日。
+    均线=前19日已知前复权收盘价+D0截至扫描时的当前价（同一价格尺度）。
+    """
+    before = sorted(d for d in trading_dates if d < day)[-20:]
+    if len(before) < 20:
+        raise ValueError("交易日历历史不足")
+    r = raw.set_index("date")
+    a = adjusted.set_index("date")
+    if not all(d in r.index and d in a.index for d in before):
+        raise ValueError("股票交易日线不完整")
+    # 必须有D0原始/复权日线，才能核验当前价与均线的转换比例。
+    if day not in r.index or day not in a.index or r.loc[day, "close"] <= 0:
+        raise ValueError("D0历史日线尚未提供，不能可靠对齐价格尺度")
+    factor = float(a.loc[day, "close"] / r.loc[day, "close"])
+    closes = pd.Series([float(a.loc[d, "close"]) for d in before[-19:]] + [float(price)*factor])
+    ma = closes.rolling(5).mean().iloc[-1], closes.rolling(10).mean().iloc[-1], closes.rolling(20).mean().iloc[-1]
+    raw_closes = pd.Series([float(r.loc[d, "close"]) for d in before[-5:]])
+    changes = raw_closes.pct_change(fill_method=None).mul(100).iloc[-4:]
+    return {"近4日涨幅≥9.8%": bool(changes.ge(9.8).any()),
+            "MA5": float(ma[0]), "MA10": float(ma[1]), "MA20": float(ma[2]),
+            "均线多头": bool(ma[0] > ma[1] > ma[2])}
+
+
+def index_quote(day):
+    # 上证指数是sh000001，不能误写成深圳平安银行sz000001。
+    for host in ("https://qt.gtimg.cn", "https://web.sqt.gtimg.cn"):
+        try:
+            def fetch():
+                res = http_get(host+"/q=sh000001", timeout=(4, 8))
+                res.raise_for_status()
+                matches = re.findall(r'v_sh000001="([^"]+)"', res.content.decode("gb18030", errors="replace"))
+                a = matches[0].split("~")
+                stamp = datetime.strptime(a[30], "%Y%m%d%H%M%S").replace(tzinfo=CN)
+                pct = float(a[32])
+                if stamp.date().isoformat() != day or not math.isfinite(pct):
+                    raise ValueError("指数日期与股票快照不一致")
+                return {"code": "000001", "name": "上证指数", "change_pct": pct,
+                        "timestamp": stamp.isoformat(), "source": "腾讯"}
+            return retry(fetch, attempts=2)
+        except Exception:
+            continue
+    raise RuntimeError("上证指数连接失败或日期不一致")
 
 
 def ai_analyze(top, context, key):
@@ -322,6 +427,10 @@ def main():
     def cached_universe():
         return UniverseCache()
 
+    @st.cache_resource(show_spinner=False)
+    def cached_histories():
+        return HistoryCache()
+
     @st.cache_data(ttl=3600, show_spinner=False)
     def cached_calendar(day):
         try:
@@ -329,9 +438,21 @@ def main():
         except Exception:
             return []
     st.set_page_config(page_title="A股隔夜策略 · 手机选股助手", page_icon="📈", layout="centered")
+    entry = st.selectbox("工作台入口", ["Production Reality｜PM01", "A股隔夜策略 · 手机选股助手"])
+    if entry == "Production Reality｜PM01":
+        from pm01 import render
+        render()
+        return
     st.title("A股隔夜策略 · 手机选股助手")
+    page = st.radio("页面导航", ["每日扫描", "历史回测", "交易日志"], horizontal=True)
+    if page == "历史回测":
+        render_backtest(st)
+        return
+    if page == "交易日志":
+        render_logs(st)
+        return
     st.caption("仅生成研究信号，不自动下单。信心度是模型主观评分，不是获利概率。")
-    st.caption("加速版 v2：名单缓存1小时 · 4路并发行情 · 逐阶段进度与耗时")
+    st.caption("策略升级 v3：近4交易日涨幅≥9.8% · MA5>MA10>MA20 · 上证指数风险过滤")
     st.info("实时源：腾讯（避开东方财富）。备用：BaoStock历史复盘。网络请求发生在云服务器，手机只负责显示。")
     mode = st.radio("选择模式", ["实时全市场扫描", "历史日线复盘（近似指标）"])
     now = datetime.now(CN)
@@ -400,19 +521,50 @@ def main():
                     latest_day = times.dt.date.max()
                     # 非交易时段只研究最后一个行情日，不混合不同日期。
                     df = df[times.dt.date == latest_day]
-                    top = filter_top(df)
+                    basic = filter_basic(df)
+                    status.update(label="正在核验历史涨幅、均线及上证指数...")
+                    market = index_quote(str(latest_day))
+                    market_calendar = history_tx("sh000001", str(latest_day), "")["date"].tolist()
+                    if market["change_pct"] < -1:
+                        st.error("今日大盘情绪极差，隔夜策略胜率大幅降低，建议直接空仓！")
+                    technical_bar = st.progress(0)
+                    def technical_progress(done, total, elapsed):
+                        technical_bar.progress(done/total, text=f"历史K线核验：{done}/{total} 只 · {elapsed:.0f} 秒")
+                    # 缓存对象先在页面线程取得，后台线程只处理数据与网络，不调用st。
+                    history_cache = cached_histories()
+                    def inspect_stock(row):
+                        try:
+                            h = history_cache.load(stock_symbol(row["代码"]), str(latest_day))
+                            metrics = technical_metrics(h["raw"], h["qfq"], str(latest_day), row["最新价"], market_calendar)
+                            return [{**row, **metrics, "历史验证状态": "PASS"}]
+                        except Exception:
+                            return [{**row, "历史验证状态": "FAIL"}]
+                    inspected = parallel_fetch(basic.to_dict("records"), inspect_stock, technical_progress, timeout=120) if not basic.empty else []
+                    checked = pd.DataFrame(inspected)
+                    missing_history = int(checked["历史验证状态"].eq("FAIL").sum()) if not checked.empty else 0
+                    full = checked.loc[checked["历史验证状态"].eq("PASS") &
+                        checked.get("近4日涨幅≥9.8%", pd.Series(False, index=checked.index)).fillna(False) &
+                        checked.get("均线多头", pd.Series(False, index=checked.index)).fillna(False)].copy() if not checked.empty else pd.DataFrame(columns=COLS)
+                    full = full.sort_values(["量比", "代码"], ascending=[False, True]).reset_index(drop=True)
+                    top = full.head(5)
+                    if missing_history:
+                        st.warning(f"{missing_history} 只基本条件候选的历史数据无法可靠验证，已排除；本次结果可能不完整，不得视为全部合格股票。")
+                    st.caption("涨停记忆按指定9.8%阈值判断，过去4个交易日不含行情日D0；该阈值并非各板块实际涨停认定。均线包含当前价，日线为前复权口径。")
                     context = {"mode": "盘后/非尾盘研究，禁止视为当前买入信号" if review else "已核验尾盘研究信号",
                         "quote_day": str(latest_day), "scan_time": current.isoformat(),
-                        "market_data": "未提供指数、新闻、资金流和行业数据；不能判断实际大盘强弱"}
+                        "market_data": market,
+                        "risk_off": market["change_pct"] < -1,
+                        "limits": "未提供新闻、资金流和行业数据；均线及历史阈值已由Python核验。"}
                     ai = None
                     # AI不可用也保留已完成的量化候选，不把AI失败伪装为行情失败。
-                    st.session_state.result = {"top": top, "review": review, "ai": None,
+                    st.session_state.result = {"top": top, "full": full, "market": market, "history_missing": missing_history,
+                        "review": review or missing_history > 0, "ai": None,
                         "expires": (current+timedelta(minutes=5)).isoformat(),
                         "note": f"行情日 {latest_day}；量化筛选已完成。"}
                     # 先展示量化候选，避免等待AI时页面仍然看不到任何结果。
                     if not top.empty:
                         st.write("量化初筛已完成，候选如下；正在继续AI分析。")
-                        st.dataframe(top, hide_index=True, use_container_width=True)
+                        st.dataframe(full, hide_index=True, use_container_width=True)
                     if not top.empty:
                         status.update(label="4/4 正在请求 AI 分析（单次超时30秒，最多2次）...")
                         try:
@@ -431,7 +583,8 @@ def main():
                         else:
                             ai = ai_analyze(top, context, key.strip())
                             st.session_state.ai_cache = {"fingerprint": fingerprint, "at": time.monotonic(), "data": ai}
-                    st.session_state.result = {"top": top, "review": review, "ai": ai,
+                    st.session_state.result = {"top": top, "full": full, "market": market, "history_missing": missing_history,
+                        "review": review or missing_history > 0, "ai": ai,
                         "expires": min(times.min().to_pydatetime() + timedelta(minutes=5), current.replace(hour=15, minute=0, second=0, microsecond=0)).isoformat(),
                         "note": f"行情日 {latest_day}；扫描 {len(symbols)} 只；获取行情完成 {current:%H:%M:%S}；本轮耗时 {time.monotonic()-scan_start:.1f} 秒。"}
                     status.update(label=f"扫描完成 · 总耗时 {time.monotonic()-scan_start:.1f} 秒", state="complete")
@@ -446,14 +599,22 @@ def main():
         if r.get("expires") and datetime.now(CN) >= datetime.fromisoformat(r["expires"]):
             r["review"] = True  # 页面刷新后，过期卡片自动降级为研究结果。
         st.caption(r["note"])
+        if r.get("market"):
+            st.metric("上证指数（000001）当日涨跌幅", f"{r['market']['change_pct']:+.2f}%")
+            st.caption(f"指数行情时间：{r['market']['timestamp']}；数据源：{r['market']['source']}")
+            if r["market"]["change_pct"] < -1:
+                st.error("今日大盘情绪极差，隔夜策略胜率大幅降低，建议直接空仓！")
+        if r.get("history_missing"):
+            st.warning(f"历史核验缺失 {r['history_missing']} 只，结果不完整，仅作研究。")
         st.caption("结果是本次扫描的快照，不会自动更新；再次操作前请重新扫描。")
         if r["review"]:
             st.warning("非交易时段、非尾盘、历史模式或行情不够新鲜：以下仅作复盘研究，不是当前买入信号。实时信号窗口为交易日14:45–15:00。")
-        st.subheader("量比排名 · 前5候选")
+        st.subheader("最终初筛完整列表 · 按量比排序")
         if r["top"].empty:
             st.info("没有股票满足条件，本次不请求AI、不生成BUY信号。")
         else:
-            st.dataframe(r["top"], hide_index=True, use_container_width=True)
+            st.dataframe(r.get("full", r["top"]), hide_index=True, use_container_width=True)
+            st.caption(f"合格 {len(r.get('full', r['top']))} 只；前 {len(r['top'])} 只提交给DeepSeek。")
         if r["ai"]:
             st.subheader("AI信号卡片" + (" · 复盘研究" if r["review"] else ""))
             st.warning(r["ai"]["market_warning"])
