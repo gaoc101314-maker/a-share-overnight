@@ -347,7 +347,7 @@ def technical_metrics(raw, adjusted, day, price, trading_dates):
     closes = pd.Series([float(a.loc[d, "close"]) for d in before[-19:]] + [float(price)*factor])
     ma = closes.rolling(5).mean().iloc[-1], closes.rolling(10).mean().iloc[-1], closes.rolling(20).mean().iloc[-1]
     raw_closes = pd.Series([float(r.loc[d, "close"]) for d in before[-5:]])
-    changes = raw_closes.pct_change(fill_method=None).mul(100).iloc[-4:]
+    changes = raw_closes.pct_change(fill_method=None).mul(100).round(6).iloc[-4:]
     return {"近4日涨幅≥9.8%": bool(changes.ge(9.8).any()),
             "MA5": float(ma[0]), "MA10": float(ma[1]), "MA20": float(ma[2]),
             "均线多头": bool(ma[0] > ma[1] > ma[2])}
@@ -419,6 +419,248 @@ def ai_analyze(top, context, key):
             time.sleep(2 ** attempt + random.random())
 
 
+def performance_metrics(trades, calendar):
+    """等权、每日全部可用资金、没有信号持现金；包含初始净值1计算回撤。"""
+    if not trades:
+        return {"total_return": 0.0, "win_rate": None, "profit_loss_ratio": None,
+                "max_drawdown": 0.0, "equity": [{"日期": calendar[0], "净值": 1.0}] if calendar else [], "trades": []}
+    d = pd.DataFrame(trades)
+    daily = d.groupby("卖出日期")["净收益率"].mean()
+    values = [1.0]
+    curve = [{"日期": calendar[0]+" 初始", "净值": 1.0}]
+    for day in calendar:
+        values.append(values[-1]*(1+float(daily.get(day, 0))))
+        curve.append({"日期": day, "净值": values[-1]})
+    series = pd.Series(values)
+    positive = d.loc[d["净收益率"] > 0, "净收益率"]
+    negative = d.loc[d["净收益率"] < 0, "净收益率"]
+    ratio = float(positive.mean()/abs(negative.mean())) if len(positive) and len(negative) else None
+    return {"total_return": values[-1]-1, "win_rate": float(d["净收益率"].gt(0).mean()),
+            "profit_loss_ratio": ratio, "max_drawdown": float((1-series/series.cummax()).max()),
+            "equity": curve, "trades": trades}
+
+
+def backtest_worker(payload):
+    """BaoStock全市场日线近似回测。逐日取得当时股票名单，避免仅用现在的存续股。
+    历史日线不能重建尾盘量比，所以不冒充原策略精确回测，也不复刻AI选股。
+    """
+    import baostock as bs
+    import socket
+    socket.setdefaulttimeout(8)
+    def login():
+        if bs.login().error_code != "0":
+            raise RuntimeError("BaoStock登录失败")
+    retry(login, attempts=2)
+    def query(fn):
+        return retry(lambda: bs_rows(fn()), attempts=2)
+    def progress(done, total, label):
+        print("PROGRESS_JSON:"+json.dumps({"done": done, "total": total, "label": label}, ensure_ascii=True), flush=True)
+    start, end = payload["start"], payload["end"]
+    warmup = (datetime.fromisoformat(start)-timedelta(days=85)).date().isoformat()
+    after = (datetime.fromisoformat(end)+timedelta(days=25)).date().isoformat()
+    # 不请求未来数据。最后一个信号日必须已经有下一交易日开盘数据。
+    after = min(after, datetime.now(CN).date().isoformat())
+    try:
+        progress(0, 1, "连接成功，读取真实交易日历")
+        cal = query(lambda: bs.query_trade_dates(start_date=warmup, end_date=after))
+        days = cal.loc[cal.is_trading_day == "1", "calendar_date"].tolist()
+        signals = [day for day in days if start <= day <= end and days.index(day) < len(days)-1]
+        if not signals:
+            raise RuntimeError("所选区间没有可取得下一交易日数据的信号日")
+        universes, codes = {}, set()
+        for i, day in enumerate(signals):
+            progress(i, len(signals), f"取得 {day} 当时的全市场名单")
+            universe = query(lambda: bs.query_all_stock(day=day))
+            if len(universe) < 3000:
+                raise RuntimeError("历史全市场名单不完整，回测已停止")
+            names = {r.code: r.code_name for r in universe.itertuples()
+                     if allowed(r.code.split(".")[-1], r.code_name)}
+            universes[day] = names
+            codes.update(names)
+        indices = query(lambda: bs.query_history_k_data_plus("sh.000001", "date,pctChg",
+            start_date=warmup, end_date=after, frequency="d", adjustflag="3"))
+        indices["pctChg"] = pd.to_numeric(indices["pctChg"], errors="coerce")
+        market = indices.set_index("date")["pctChg"]
+        if any(day not in market.index or pd.isna(market.loc[day]) for day in signals):
+            raise RuntimeError("指数历史不完整，不能执行大盘过滤")
+        buckets = {day: [] for day in signals}
+        failures = 0
+        for number, code in enumerate(sorted(codes)):
+            progress(number, len(codes), f"读取股票历史：{code}（全市场可能需要较长时间）")
+            try:
+                raw = query(lambda: bs.query_history_k_data_plus(code,
+                    "date,open,high,low,close,preclose,volume,turn,pctChg,tradestatus,isST",
+                    start_date=warmup, end_date=after, frequency="d", adjustflag="3"))
+                adjusted = query(lambda: bs.query_history_k_data_plus(code, "date,open,close",
+                    start_date=warmup, end_date=after, frequency="d", adjustflag="2"))
+                if raw.empty or adjusted.empty:
+                    raise ValueError("历史为空")
+                for col in ["open", "high", "low", "close", "preclose", "volume", "turn", "pctChg"]:
+                    raw[col] = pd.to_numeric(raw[col], errors="coerce")
+                for col in ["open", "close"]:
+                    adjusted[col] = pd.to_numeric(adjusted[col], errors="coerce")
+                raw = raw.sort_values("date").drop_duplicates("date").reset_index(drop=True)
+                adjusted = adjusted.set_index("date")
+                raw["量比近似"] = raw.volume / raw.volume.shift(1).rolling(5, min_periods=5).mean()
+                raw["流通市值亿"] = raw.volume / (raw.turn/100) * raw.close / 1e8
+                # 用Pandas滚动均线及移位窗口，只使用截至D0的信息。
+                raw["adj_close"] = raw.date.map(adjusted.close)
+                for n in [5, 10, 20]:
+                    raw[f"MA{n}"] = raw.adj_close.rolling(n, min_periods=n).mean()
+                raw["memory"] = raw.pctChg.shift(1).ge(9.8).rolling(4, min_periods=4).max().eq(1)
+                byday = raw.set_index("date")
+                for day in signals:
+                    if code not in universes[day] or day not in byday.index or float(market.loc[day]) < -1:
+                        continue
+                    x = byday.loc[day]
+                    if x.tradestatus != "1" or x.isST != "0":
+                        continue
+                    if not (3 <= x.pctChg <= 5 and x["量比近似"] > 1 and 5 <= x.turn <= 10 and
+                            50 <= x["流通市值亿"] <= 200 and x.memory and x.MA5 > x.MA10 > x.MA20):
+                        continue
+                    expected = days[max(0, days.index(day)-19):days.index(day)+1]
+                    if len(expected) != 20 or not all(d in byday.index for d in expected):
+                        continue
+                    sell_day = days[days.index(day)+1]
+                    valid_exit = sell_day in byday.index and sell_day in adjusted.index
+                    next_row = byday.loc[sell_day] if valid_exit else None
+                    # 次日停牌/开盘跌停不擅自假定卖出成交，不挑掉这些亏损交易。
+                    limit = 0.20 if code.split(".")[-1].startswith(("300", "301", "688", "689")) else 0.10
+                    blocked = not valid_exit or next_row.tradestatus != "1" or next_row.open <= 0 or (
+                        next_row.preclose > 0 and next_row.open/next_row.preclose-1 <= -limit+0.001)
+                    gross = None if blocked else float(adjusted.loc[sell_day, "open"]/x.adj_close-1)
+                    if gross is not None and not math.isfinite(gross):
+                        blocked = True
+                    buckets[day].append({"买入日期": day, "卖出日期": sell_day, "代码": code.split(".")[-1],
+                        "名称": universes[day][code], "买入价近似": float(x.close),
+                        "卖出价近似": None if blocked else float(next_row.open),
+                        "量比近似": float(x["量比近似"]), "净收益率": None if blocked else
+                        (1+gross)*(1-payload["sell_cost"])/(1+payload["buy_cost"])-1,
+                        "无法确认卖出": bool(blocked)})
+            except Exception:
+                failures += 1
+                if failures >= 10:
+                    raise RuntimeError("多只股票历史请求失败，回测停止，不能输出有偏收益")
+        if failures:
+            raise RuntimeError(f"有{failures}只股票历史缺失，拒绝把不完整回测当作全市场结果")
+        selected = []
+        for day in signals:
+            selected.extend(sorted(buckets[day], key=lambda x: (-x["量比近似"], x["代码"]))[:5])
+        if any(x["无法确认卖出"] for x in selected):
+            raise RuntimeError("存在次日停牌/疑似开盘跌停交易，无法满足次日开盘卖出；本次拒绝输出乐观收益")
+        progress(1, 1, "计算净值、胜率、盈亏比及最大回撤")
+        result = performance_metrics(selected, [d for d in days if signals[0] <= d <= days[days.index(signals[-1])+1]])
+        result.update({"signal_days": len(signals), "universe_count": len(codes), "source": "BaoStock",
+                       "mode": "日线近似量比+收盘价买入+次日开盘卖出；量化前5等权，不含历史AI"})
+        return result
+    finally:
+        bs.logout()
+
+
+def run_backtest(payload, progress):
+    """独立进程隔离BaoStock连接；最多30分钟，连续60秒无进展则停止。"""
+    process = subprocess.Popen([sys.executable, str(Path(__file__).resolve()), "--backtest-worker"],
+        stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, encoding="utf-8", bufsize=1)
+    events = queue.Queue()
+    def read():
+        for line in process.stdout:
+            if line.startswith(("PROGRESS_JSON:", "RESULT_JSON:", "ERROR_JSON:")):
+                events.put(line)
+        events.put(None)
+    threading.Thread(target=read, daemon=True).start()
+    process.stdin.write(json.dumps(payload))
+    process.stdin.close()
+    started = last_event = time.monotonic()
+    try:
+        while True:
+            if time.monotonic()-started > 1800 or time.monotonic()-last_event > 60:
+                raise RuntimeError("BaoStock连接或读取超时，已停止回测。没有生成模拟收益。")
+            try:
+                line = events.get(timeout=0.5)
+            except queue.Empty:
+                continue
+            if line is None:
+                raise RuntimeError("BaoStock连接失败，请稍后重试；当前云出口此前也出现过连接失败。")
+            last_event = time.monotonic()
+            kind, body = line.split(":", 1)
+            data = json.loads(body)
+            if kind == "RESULT_JSON":
+                return data
+            if kind == "ERROR_JSON":
+                raise RuntimeError(data["error"])
+            progress(data["done"], data["total"], data["label"], time.monotonic()-started)
+    finally:
+        if process.poll() is None:
+            process.kill()
+        process.wait(timeout=5)
+
+
+def render_backtest(st):
+    st.subheader("历史回测 · 日线近似验证")
+    st.warning("BaoStock日线无法还原尾盘实时量比和实际尾盘成交价。本页使用日成交量/前5日均量、收盘价近似买入、次日开盘价近似卖出；不包含历史AI选择，不能证明实盘六步法收益。")
+    st.caption("六步法在本页按原四项条件+近4日涨幅≥9.8%+均线多头解释；上证指数跌幅超过1%时不建仓。量化前5等权，每日全额资金，空仓日持现金。")
+    today = datetime.now(CN).date()
+    with st.form("backtest_form"):
+        start = st.date_input("开始日期", today-timedelta(days=90), max_value=today-timedelta(days=1))
+        end = st.date_input("结束日期", today-timedelta(days=2), max_value=today-timedelta(days=1))
+        buy = st.number_input("买入综合成本（%，含你假设的费用和滑点）", 0.0, 5.0, 0.10, 0.01)
+        sell = st.number_input("卖出综合成本（%，含你假设的费用和滑点）", 0.0, 5.0, 0.10, 0.01)
+        st.caption("成本为模拟参数，不代表你的券商实际收费。最长支持183个自然日的区间。")
+        submit = st.form_submit_button("开始回测", type="primary", use_container_width=True)
+    if submit:
+        st.session_state.pop("backtest_result", None)
+        if start > end or (end-start).days > 183:
+            st.error("请检查日期顺序；区间不能超过183天。")
+        else:
+            bar = st.progress(0)
+            label = st.empty()
+            def show(done, total, text, elapsed):
+                bar.progress(min(done/max(total, 1), 1), text=text)
+                label.caption(f"已耗时 {elapsed:.0f} 秒；全市场逐股回测耗时较长，完成前不会输出收益。")
+            try:
+                result = run_backtest({"start": start.isoformat(), "end": end.isoformat(),
+                    "buy_cost": buy/100, "sell_cost": sell/100}, show)
+                st.session_state.backtest_result = result
+                bar.progress(1.0, text="回测完成（近似模式）")
+            except Exception as exc:
+                st.error(str(exc) if isinstance(exc, RuntimeError) else "回测数据源连接失败，请检查网络。")
+    result = st.session_state.get("backtest_result")
+    if result:
+        st.metric("总收益率（模拟）", f"{result['total_return']:.2%}")
+        st.metric("交易胜率", "无交易" if result["win_rate"] is None else f"{result['win_rate']:.2%}")
+        st.metric("盈亏比（平均盈利/平均亏损绝对值）", "不可计算" if result["profit_loss_ratio"] is None else f"{result['profit_loss_ratio']:.2f}")
+        st.metric("最大回撤", f"{result['max_drawdown']:.2%}")
+        st.caption(f"{result['source']}；{result['signal_days']}个信号日；{result['universe_count']}只区间股票。{result['mode']}")
+        if result["equity"]:
+            st.line_chart(pd.DataFrame(result["equity"]).set_index("日期"))
+        trades = pd.DataFrame(result["trades"])
+        st.dataframe(trades, hide_index=True, use_container_width=True)
+        st.download_button("下载回测交易CSV", trades.to_csv(index=False).encode("utf-8-sig"), "backtest_trades.csv", "text/csv")
+
+
+def render_logs(st):
+    st.subheader("交易日志")
+    st.info("记录保存在当前浏览器会话中，刷新断线、关闭网页或云端重启后可能丢失。请及时下载CSV备份；未写入正式交易数据库。")
+    with st.form("trade_log_form", clear_on_submit=True):
+        day = st.date_input("日期", datetime.now(CN).date())
+        code = st.text_input("股票代码（6位）", placeholder="例如 600000")
+        buy = st.number_input("买入价", min_value=0.01, value=10.0, step=0.01, format="%.3f")
+        sell = st.number_input("卖出价", min_value=0.01, value=10.0, step=0.01, format="%.3f")
+        confidence = st.number_input("AI信心度（0—1，主观评分）", min_value=0.0, max_value=1.0, value=0.5, step=0.01)
+        submitted = st.form_submit_button("保存", type="primary", use_container_width=True)
+    if submitted:
+        if not re.fullmatch(r"\d{6}", code.strip()):
+            st.error("股票代码须为6位数字。")
+        else:
+            entries = st.session_state.setdefault("trade_logs", [])
+            entries.append({"日期": day.isoformat(), "股票代码": code.strip(), "买入价": buy,
+                "卖出价": sell, "AI信心度": confidence, "毛收益率": sell/buy-1})
+            st.success("已保存到当前会话。请下载CSV备份。")
+    data = pd.DataFrame(st.session_state.get("trade_logs", []), columns=["日期", "股票代码", "买入价", "卖出价", "AI信心度", "毛收益率"])
+    st.dataframe(data, hide_index=True, use_container_width=True)
+    st.download_button("下载CSV", data.to_csv(index=False).encode("utf-8-sig"), "trade_logs.csv", "text/csv")
+
+
 def main():
     import streamlit as st
     # 名册1小时缓存，交易日历按日期缓存（连接失败也缓存，避免每次白等）。
@@ -474,8 +716,30 @@ def main():
                     st.write("历史全市场串行读取可能需要数分钟；最长等待20分钟。")
                     h = isolated_bs("history", day.isoformat(), 1200)
                     status.update(label="正在初筛...")
-                    top = filter_top(pd.DataFrame(h["rows"], columns=COLS))
-                    st.session_state.result = {"top": top, "review": True, "ai": None,
+                    daily_index = history_tx("sh000001", day.isoformat(), "")
+                    calendar = daily_index.date.tolist()
+                    cache = cached_histories()
+                    history_missing = 0
+                    passed = []
+                    for row in h["rows"]:
+                        try:
+                            kd = cache.load(stock_symbol(row["代码"]), day.isoformat())
+                            metrics = technical_metrics(kd["raw"], kd["qfq"], day.isoformat(), row["最新价"], calendar)
+                            if metrics["近4日涨幅≥9.8%"] and metrics["均线多头"]:
+                                passed.append({**row, **metrics})
+                        except Exception:
+                            history_missing += 1
+                    full = pd.DataFrame(passed) if passed else pd.DataFrame(columns=COLS)
+                    full = full.sort_values(["量比", "代码"], ascending=[False, True]).reset_index(drop=True)
+                    top = full.head(5)
+                    index_change = daily_index.close.pct_change(fill_method=None).mul(100)
+                    exact = daily_index.index[daily_index.date == day.isoformat()].tolist()
+                    if not exact or pd.isna(index_change.loc[exact[0]]):
+                        raise RuntimeError("所选日期指数历史不完整")
+                    market = {"change_pct": float(index_change.loc[exact[0]]), "source": "腾讯历史日线",
+                              "timestamp": day.isoformat()+" 收盘"}
+                    st.session_state.result = {"top": top, "full": full, "market": market,
+                        "history_missing": history_missing+h["failures"], "review": True, "ai": None,
                         "note": f"{day} 历史近似复盘；覆盖名册 {h['total']} 只，请求失败 {h['failures']} 只。"}
                     if h["failures"]:
                         st.warning("部分历史日线缺失或请求失败，结果是不完整的近似复盘，不能声称全市场排名。")
@@ -634,7 +898,15 @@ def main():
 
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1 and sys.argv[1] == "--bs-worker":
+    if len(sys.argv) > 1 and sys.argv[1] == "--backtest-worker":
+        try:
+            answer = backtest_worker(json.loads(sys.stdin.read()))
+            print("RESULT_JSON:"+json.dumps(answer, ensure_ascii=True, allow_nan=False), flush=True)
+        except Exception as exc:
+            message = str(exc) if isinstance(exc, RuntimeError) else "历史数据不可用，回测未生成收益。"
+            print("ERROR_JSON:"+json.dumps({"error": message}, ensure_ascii=True), flush=True)
+            sys.exit(2)
+    elif len(sys.argv) > 1 and sys.argv[1] == "--bs-worker":
         try:
             answer = bs_worker(sys.argv[2], sys.argv[3])
             print("RESULT_JSON:"+json.dumps(answer, ensure_ascii=True, allow_nan=False))
