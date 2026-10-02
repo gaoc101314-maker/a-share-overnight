@@ -1,5 +1,6 @@
 """PM01 Reality: deterministic data supply; no strategy/AI/database writes."""
 import hashlib
+import copy
 import html
 import json
 import math
@@ -16,6 +17,9 @@ import requests
 
 CN = ZoneInfo('Asia/Shanghai')
 LOCAL = threading.local()
+CACHE_LOCK = threading.Lock()
+UNIVERSE_CACHE = None
+HISTORY_MEMORY = {}
 PERIODS = (3, 5, 10)
 SSE_CALENDAR = 'https://www.sse.com.cn/disclosure/dealinstruc/closed/c/c_20251222_10802510.shtml'
 HOLIDAYS_2026 = [('01-01','01-03'),('02-15','02-23'),('04-04','04-06'),('05-01','05-05'),('06-19','06-21'),('09-25','09-27'),('10-01','10-07')]
@@ -166,11 +170,19 @@ def em_history(code, d0):
 def history(code, d0, bases):
     # Cache immutable prior-day closes only, keyed by required D0 and dates.
     key=hashlib.sha256((code+d0+','.join(bases)).encode()).hexdigest()
+    # 只复用已经核验的历史基准收盘价；当前行情始终重新请求。
+    with CACHE_LOCK:
+        if key in HISTORY_MEMORY:
+            return copy.deepcopy({**HISTORY_MEMORY[key], 'cache':'PRIOR_CLOSE_MEMORY'})
     folder=Path(__file__).parent/'.pm01_history'
     path=folder/(key+'.json')
     try:
         cached=json.loads(path.read_text(encoding='utf8'))
         if all(day in cached['closes'] for day in bases):
+            with CACHE_LOCK:
+                if len(HISTORY_MEMORY)>=6000:
+                    HISTORY_MEMORY.pop(next(iter(HISTORY_MEMORY)))
+                HISTORY_MEMORY[key]=cached
             return {**cached,'cache':'PRIOR_CLOSE_CACHE'}
     except (OSError,ValueError,KeyError):
         pass
@@ -218,6 +230,10 @@ def history(code, d0, bases):
     if not all(day in valid for day in bases):
         raise ValueError('EXACT_BASE_DATE_MISSING')
     result=dict(closes=valid,source=source,primary_source='FAIL' if fallback else 'PASS',fetched_at=now_cn().isoformat())
+    with CACHE_LOCK:
+        if len(HISTORY_MEMORY)>=6000:
+            HISTORY_MEMORY.pop(next(iter(HISTORY_MEMORY)))
+        HISTORY_MEMORY[key]=result
     try:
         folder.mkdir(exist_ok=True)
         temp=path.with_suffix('.'+uuid.uuid4().hex+'.tmp')
@@ -260,16 +276,27 @@ def blank_snapshot(error='NOT_REFRESHED'):
 
 
 def refresh(progress=None):
+    global UNIVERSE_CACHE
     s=blank_snapshot()
     def notify(done,total,elapsed):
         if progress: progress(done,total,elapsed)
     try:
-        try:
-            universe=sina_universe(notify)
-            s['trace']['UNIVERSE']={'PRIMARY_SOURCE':'PASS','DATA_SOURCE':'SINA_HS_A_INCLUDES_BJ'}
-        except Exception:
-            universe=em_universe(notify)
-            s['trace']['UNIVERSE']={'PRIMARY_SOURCE':'FAIL','FALLBACK_SOURCE':'EASTMONEY','DATA_SOURCE':'EASTMONEY'}
+        with CACHE_LOCK:
+            cached=copy.deepcopy(UNIVERSE_CACHE)
+        if cached and time.monotonic()-cached['at']<3600:
+            universe=cached['rows']
+            s['trace']['UNIVERSE']={**cached['trace'],'CACHE':'ONE_HOUR_UNIVERSE_CACHE'}
+        else:
+            try:
+                universe=sina_universe(notify)
+                trace={'PRIMARY_SOURCE':'PASS','DATA_SOURCE':'SINA_HS_A_INCLUDES_BJ'}
+            except Exception:
+                universe=em_universe(notify)
+                trace={'PRIMARY_SOURCE':'FAIL','FALLBACK_SOURCE':'EASTMONEY','DATA_SOURCE':'EASTMONEY'}
+            trace['FETCHED_AT']=now_cn().isoformat()
+            s['trace']['UNIVERSE']=trace
+            with CACHE_LOCK:
+                UNIVERSE_CACHE={'at':time.monotonic(),'rows':universe,'trace':trace}
         s['market_count']=len(universe)
         codes=sorted(x['code'] for x in universe)
         batches=[codes[i:i+60] for i in range(0,len(codes),60)]

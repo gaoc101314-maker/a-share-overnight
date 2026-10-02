@@ -674,6 +674,11 @@ def main():
         return HistoryCache()
 
     @st.cache_data(ttl=3600, show_spinner=False)
+    def cached_index_calendar(day):
+        # 仅缓存交易日期列表；指数最新涨跌幅仍每次实时请求。
+        return history_tx("sh000001", day, "")["date"].tolist()
+
+    @st.cache_data(ttl=3600, show_spinner=False)
     def cached_calendar(day):
         try:
             return isolated_bs("meta", day, 8)["trade_days"]
@@ -788,7 +793,7 @@ def main():
                     basic = filter_basic(df)
                     status.update(label="正在核验历史涨幅、均线及上证指数...")
                     market = index_quote(str(latest_day))
-                    market_calendar = history_tx("sh000001", str(latest_day), "")["date"].tolist()
+                    market_calendar = cached_index_calendar(str(latest_day))
                     if market["change_pct"] < -1:
                         st.error("今日大盘情绪极差，隔夜策略胜率大幅降低，建议直接空仓！")
                     technical_bar = st.progress(0)
@@ -839,7 +844,9 @@ def main():
                             raise RuntimeError("DEEPSEEK_API_KEY为空，请检查Secrets。")
                         # 仅在本浏览器会话复用相同数据的AI结果，不复用旧行情。
                         # 数据/模式/密钥变化后重新分析；缓存不存储明文密钥。
-                        fingerprint = hashlib.sha256((top.to_json(force_ascii=False)+str(review)+key).encode()).hexdigest()
+                        # 行情时间本身不改变分析，候选价格/指标、大盘涨跌幅与模式变化则必须重算。
+                        ai_input = top.drop(columns=["行情时间"], errors="ignore").to_json(force_ascii=False)
+                        fingerprint = hashlib.sha256((ai_input+str(latest_day)+str(review)+str(market["change_pct"])+key).encode()).hexdigest()
                         cached_ai = st.session_state.get("ai_cache")
                         if cached_ai and cached_ai["fingerprint"] == fingerprint and time.monotonic()-cached_ai["at"] < 600:
                             ai = cached_ai["data"]
