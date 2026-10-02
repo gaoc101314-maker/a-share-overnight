@@ -685,7 +685,11 @@ def main():
         except Exception:
             return []
     st.set_page_config(page_title="A股隔夜策略 · 手机选股助手", page_icon="📈", layout="centered")
-    entry = st.selectbox("工作台入口", ["Production Reality｜PM01", "A股隔夜策略 · 手机选股助手"])
+    entry = st.selectbox("工作台入口", ["Production Reality｜PM01", "PM03真实五源回放｜2026-09-30", "A股隔夜策略 · 手机选股助手"],index=1 if st.query_params.get('view')=='real-replay-20260930' else 0)
+    if entry == "PM03真实五源回放｜2026-09-30":
+        from real_replay import render
+        render()
+        return
     if entry == "Production Reality｜PM01":
         from pm01 import render
         render()

@@ -1,0 +1,54 @@
+{
+  "PRODUCT": "PM03_FIVE_SOURCE_REAL_REPLAY_V0.1",
+  "TEST_DATE": "2026-09-30",
+  "3D_TOP50": "50/50",
+  "5D_TOP50": "50/50",
+  "10D_TOP50": "50/50",
+  "SECOND_BOARD_INPUT": 137,
+  "LEADER_POOL_INPUT": 136,
+  "SECOND_BOARD_REAL_POOL": "PASS",
+  "LEADER_REAL_POOL": "PASS",
+  "NAME_CODE_MATCH": "273/273",
+  "FIVE_SOURCE_STATUS": "PASS",
+  "FIVE_SOURCE_UNIQUE_COUNT": 279,
+  "MULTI_SOURCE_COUNT": 92,
+  "MULTI_SOURCE_IDENTITY": "PASS",
+  "D0_PATH_DATA": "PARTIAL",
+  "1400_DATA": "279/279",
+  "1430_DATA": "279/279",
+  "ACCOUNT_DATA_STATUS": "PASS",
+  "UNKNOWN_FIELD_COUNT": 10,
+  "UNKNOWN_STOCK_COUNT": 2,
+  "UNKNOWN_DETAIL": [
+    {
+      "code": "002813",
+      "name": "路畅科技",
+      "fields": [
+        "DAY_HIGH",
+        "DAY_HIGH_RETURN",
+        "DAY_LOW",
+        "DAY_LOW_RETURN",
+        "CURRENT_TO_HIGH"
+      ]
+    },
+    {
+      "code": "600293",
+      "name": "三峡新材",
+      "fields": [
+        "DAY_HIGH",
+        "DAY_HIGH_RETURN",
+        "DAY_LOW",
+        "DAY_LOW_RETURN",
+        "CURRENT_TO_HIGH"
+      ]
+    }
+  ],
+  "BLIND_UNIVERSE_OUTPUT": "PM03_BLIND_UNIVERSE_2026-09-30.txt",
+  "BLIND_TEST_READY": "NO",
+  "TOP50_HISTORY_CERTIFICATION": {
+    "3": "FAIL",
+    "5": "FAIL",
+    "10": "FAIL"
+  },
+  "RESULT": "FAIL"
+}

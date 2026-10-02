@@ -64,7 +64,7 @@ def merge(s):
             add(r)
             combined[r['code']][label]='YES'
             if r.get('POOL_ASSET'):
-                combined[r['code']]['SOURCE_TRACE'][label]={'source':'AUTO_POOL_ASSET',
+                combined[r['code']]['SOURCE_TRACE'][label]={'source':r['POOL_ASSET'].get('source','AUTO_POOL_ASSET'),
                     'version_id':r['POOL_VERSION_ID'],'asof_date':r['POOL_ASOF_DATE'],
                     'asset':r['POOL_ASSET']}
     return [combined[c] for c in sorted(combined)]
