@@ -25,6 +25,28 @@ RULE = "⚠️ 铁律提醒：次日开盘无论盈亏，必须无条件卖出�
 HTTP_LOCAL = threading.local()
 
 
+class UniverseCache:
+    """只缓存名册数据，不缓存或重放网页进度组件。
+    锁避免多个访客同时重复下载；失效后重新获取，失败不写入缓存。
+    """
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.stocks = None
+        self.loaded_at = 0
+
+    def load(self, progress=None):
+        while not self.lock.acquire(timeout=0.5):
+            if progress:
+                progress(0, 1, 0)
+        try:
+            if self.stocks is None or time.monotonic()-self.loaded_at >= 3600:
+                self.stocks = sina_universe(progress)
+                self.loaded_at = time.monotonic()
+            return [dict(r) for r in self.stocks]
+        finally:
+            self.lock.release()
+
+
 def http_get(url, **kwargs):
     # 每个工作线程独立复用连接，省去逐请求重建HTTPS连接的耗时。
     if not hasattr(HTTP_LOCAL, "session"):
@@ -296,9 +318,9 @@ def main():
     import streamlit as st
     # 名册1小时缓存，交易日历按日期缓存（连接失败也缓存，避免每次白等）。
     # 行情不做缓存，每次点击仍请求完整的新快照。
-    @st.cache_data(ttl=3600, show_spinner=False)
-    def cached_universe(_progress=None):
-        return sina_universe(_progress)
+    @st.cache_resource(show_spinner=False)
+    def cached_universe():
+        return UniverseCache()
 
     @st.cache_data(ttl=3600, show_spinner=False)
     def cached_calendar(day):
@@ -342,7 +364,7 @@ def main():
                     name_bar = st.progress(0)
                     def name_progress(done, total, elapsed):
                         name_bar.progress(done/total, text=f"股票名单：{done}/{total} 页 · 本阶段 {elapsed:.0f} 秒")
-                    meta = {"stocks": cached_universe(name_progress), "trade_days": []}
+                    meta = {"stocks": cached_universe().load(name_progress), "trade_days": []}
                     name_bar.progress(1.0, text=f"股票名单已就绪：{len(meta['stocks'])} 只（首次获取或缓存）")
                     symbols = [r["code"].replace(".", "") for r in meta["stocks"]]
                     status.update(label="2/4 获取全市场行情（4路并发）")
