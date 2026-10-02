@@ -174,17 +174,45 @@ def history(code, d0, bases):
             return {**cached,'cache':'PRIOR_CLOSE_CACHE'}
     except (OSError,ValueError,KeyError):
         pass
+    closes=None
+    source=None
+    endpoints=[('https://web.ifzq.gtimg.cn/appstock/app/fqkline/get','TENCENT_RAW_DAILY',symbol(code)+',day,,,80,'),('https://web.ifzq.gtimg.cn/appstock/app/kline/kline','TENCENT_RAW_KLINE_BACKUP',symbol(code)+',day,,,80'),('https://proxy.finance.qq.com/ifzqgtimg/appstock/app/fqkline/get','TENCENT_PROXY_RAW_BACKUP',symbol(code)+',day,,,80,')]
+    rejected=getattr(LOCAL,'history_rejected',{})
     fallback=False
-    try:
-        d=get('https://web.ifzq.gtimg.cn/appstock/app/fqkline/get',{'param':symbol(code)+',day,,,80,'}).json()['data'][symbol(code)]
-        closes={a[0]:float(a[2]) for a in d.get('day',[])}
-        if not all(day in closes for day in bases):
-            raise ValueError('EXACT_BASE_DATE_MISSING')
-        source='TENCENT_RAW_DAILY'
-    except Exception:
-        fallback=True
-        closes=em_history(code,d0)
-        source='EASTMONEY_RAW_DAILY'
+    for i,(endpoint,label,param) in enumerate(endpoints):
+        if time.monotonic()-rejected.get(endpoint,-100000)<120:
+            fallback=True
+            continue
+        try:
+            d=get(endpoint,{'param':param}).json()['data'][symbol(code)]
+            candidate={a[0]:float(a[2]) for a in d.get('day',[])}
+            if not all(day in candidate for day in bases):
+                raise ValueError('EXACT_BASE_DATE_MISSING')
+            closes,source=candidate,label
+            fallback=i>0
+            break
+        except requests.RequestException:
+            rejected[endpoint]=time.monotonic()
+            LOCAL.history_rejected=rejected
+            fallback=True
+        except (ValueError,KeyError,TypeError):
+            fallback=True
+    if closes is None:
+        try:
+            raw=get('https://quotes.sina.cn/cn/api/jsonp_v2.php/var%20pm01=/CN_MarketDataService.getKLineData',dict(symbol=symbol(code),scale=240,ma='no',datalen=80)).text
+            match=re.search(r'var pm01=\((\[.*\])\);?\s*$',raw,re.S)
+            if not match:
+                raise ValueError('SINA_DAILY_FORMAT')
+            bars=json.loads(match.group(1))
+            candidate={r['day'][:10]:float(r['close']) for r in bars}
+            if not all(day in candidate for day in bases):
+                raise ValueError('SINA_EXACT_BASE_MISSING')
+            closes,source=candidate,'SINA_RAW_DAILY_BACKUP'
+            fallback=True
+        except Exception:
+            closes=em_history(code,d0)
+            source='EASTMONEY_RAW_DAILY'
+            fallback=True
     # Never replace an exchange base date by the stock's Nth available bar.
     valid={day:value for day,value in closes.items() if day<d0 and math.isfinite(value) and value>0}
     if not all(day in valid for day in bases):
@@ -258,25 +286,20 @@ def refresh(progress=None):
         d0=s['d0']
         s['source_timestamp']=max(r['source_timestamp'] for r in quotes.values())
         s['snapshot_time']=now_cn().isoformat()
-        # Exchange trading dates, derived from index daily bars and checked against the official calendar.
-        try:
-            index=get('https://web.ifzq.gtimg.cn/appstock/app/fqkline/get',{'param':'sh000001,day,,,80,'}).json()['data']['sh000001']['day']
-            days=sorted({r[0] for r in index if r[0]<=d0})
-            s['trace']['CALENDAR']={'PRIMARY_SOURCE':'PASS','DATA_SOURCE':'TENCENT_INDEX_DAILY+SSE_2026'}
-        except Exception:
-            dates=get('https://push2his.eastmoney.com/api/qt/stock/kline/get',dict(secid='1.000001',klt=101,fqt=0,beg=(datetime.fromisoformat(d0)-timedelta(days=90)).strftime('%Y%m%d'),end=d0.replace('-',''),fields1='f1,f2,f3,f4,f5,f6',fields2='f51,f52,f53')).json()['data']['klines']
-            days=sorted({line.split(',')[0] for line in dates if line.split(',')[0]<=d0})
-            s['trace']['CALENDAR']={'PRIMARY_SOURCE':'FAIL','FALLBACK_SOURCE':'EASTMONEY_INDEX_DAILY','DATA_SOURCE':'EASTMONEY_INDEX_DAILY+SSE_2026'}
-        if not days or days[-1]!=d0 or len(days)<11:
-            raise ValueError('EXCHANGE_CALENDAR_INCOMPLETE')
-        expected=[]
-        cursor=datetime.fromisoformat(days[-11])
-        while cursor.date().isoformat()<=d0:
-            if trading_day(cursor.date().isoformat()) is True:
-                expected.append(cursor.date().isoformat())
-            cursor+=timedelta(days=1)
-        if expected!=days[-11:]:
-            raise ValueError('CALENDAR_UNVERIFIED_OR_MISMATCH')
+        # Official exchange calendar, never natural-day offsets or per-stock bar counts.
+        if trading_day(d0) is not True:
+            raise ValueError('D0_CALENDAR_UNVERIFIED')
+        days=[]
+        cursor=datetime.fromisoformat(d0)
+        while len(days)<11:
+            state=trading_day(cursor.date().isoformat())
+            if state is None:
+                raise ValueError('CALENDAR_YEAR_UNVERIFIED')
+            if state:
+                days.append(cursor.date().isoformat())
+            cursor-=timedelta(days=1)
+        days.sort()
+        s['trace']['CALENDAR']={'PRIMARY_SOURCE':'PASS','DATA_SOURCE':'SSE_OFFICIAL_2026','SOURCE_URL':SSE_CALENDAR,'VERIFIED_ON':'2026-10-02'}
         s['base_dates']={str(n):days[-1-n] for n in PERIODS}
         bases=list(s['base_dates'].values())
         # A stale positive quote could change the Top50: fail certification, never silently omit it.
@@ -291,8 +314,8 @@ def refresh(progress=None):
         history_sources={x['source'] for x in h.values()}
         quote_sources={x['quote_source'] for x in quotes.values()}
         s['data_source']=s['trace']['UNIVERSE']['DATA_SOURCE']+';QUOTES='+','.join(sorted(quote_sources))+';HISTORY='+','.join(sorted(history_sources))
-        s['trace']['QUOTES']={'PRIMARY_SOURCE':'FAIL' if any(r.get('primary_source')=='FAIL' for r in quotes.values()) else 'PASS','DATA_SOURCE':sorted(quote_sources)}
-        s['trace']['HISTORY']={'PRIMARY_SOURCE':'FAIL' if any(x['primary_source']=='FAIL' for x in h.values()) else 'PASS','FALLBACK_SOURCE':'EASTMONEY_RAW_DAILY' if 'EASTMONEY_RAW_DAILY' in history_sources else 'NONE','FAILED_COUNT':len(hfail)}
+        s['trace']['QUOTES']={'PRIMARY_SOURCE':'FAIL' if any(r.get('primary_source')=='FAIL' for r in quotes.values()) else 'PASS','FALLBACK_SOURCE':','.join(sorted(x for x in quote_sources if x!='https://qt.gtimg.cn')) or 'NONE','DATA_SOURCE':sorted(quote_sources)}
+        s['trace']['HISTORY']={'PRIMARY_SOURCE':'FAIL' if any(x['primary_source']=='FAIL' for x in h.values()) else 'PASS','FALLBACK_SOURCE':','.join(sorted(x for x in history_sources if x!='TENCENT_RAW_DAILY')) or 'NONE','DATA_SOURCE':sorted(history_sources),'FAILED_COUNT':len(hfail)}
         if hfail:
             s['errors'].append('HISTORY_MISSING:'+str(len(hfail)))
         for n in PERIODS:
@@ -359,6 +382,9 @@ def freeze(snapshot, second='', leader=''):
 def export_text(s):
     lines=['PM01_REALITY',f"D0_DATE={s['d0']}",f"SNAPSHOT_TIME={s['snapshot_time']}",f"SNAPSHOT_ID={s['bundle_id']}",f"DATA_SOURCE={s['data_source']}",f"SOURCE_TIMESTAMP={s['source_timestamp']}",f"MARKET_COUNT={s['market_count']}",f"RESEARCH_MODE={s['research_mode']}",f"TIME_BOUNDARY={s['phase']}"]
     if s['research_mode']=='YES': lines.append('NOT_LIVE_PRODUCTION')
+    primary='FAIL' if any(t.get('PRIMARY_SOURCE')=='FAIL' for t in s['trace'].values()) or not s['trace'] else 'PASS'
+    fallback=','.join(t.get('FALLBACK_SOURCE','') for t in s['trace'].values() if t.get('FALLBACK_SOURCE') not in (None,'NONE')) or 'NONE'
+    lines += ['PRIMARY_SOURCE='+primary,'FALLBACK_SOURCE='+fallback]
     lines += ['MARKET_UNIVERSE=原始市场认证；账户资格不参与排序','RETURN_FORMULA=D0_PRICE / UNADJUSTED_CLOSE(D0-N_EXCHANGE_TRADING_DAYS) - 1','BASE_DATES='+json.dumps(s.get('base_dates',{}),ensure_ascii=False),'SOURCE_TRACE='+json.dumps(s['trace'],ensure_ascii=False)]
     for n in PERIODS: lines.append(f"{n}D_POOL_STATUS={s['pool_status'][str(n)]}")
     lines += [f"SECOND_BOARD_POOL_STATUS={s['second_status']}",f"LEADER_POOL_STATUS={s['leader_status']}",f"SAME_SNAPSHOT_STATUS={s['same_snapshot']}",f"INPUT_FREEZE_STATUS={s['input_freeze']}"]
@@ -377,6 +403,7 @@ def export_text(s):
 def render():
     import streamlit as st
     import streamlit.components.v1 as components
+    st.markdown('<style>h1 {font-size:28px !important;line-height:1.2 !important} .block-container {padding-top:2.5rem}</style>',unsafe_allow_html=True)
     st.title('A股 Production Reality')
     st.caption('PM01 五源输入')
     st.caption('只供给市场Reality；正式二板池和总龙头池由公司提供。')
@@ -413,19 +440,18 @@ def render():
     second,leader=inputs['second'],inputs['leader']
     s=freeze(snapshot,second,leader)
     with card.container(border=True):
-        st.write('日期：',s['d0'] or '等待刷新')
-        st.write('数据取得时间：',s['snapshot_time'])
-        st.write('数据源：',s['data_source'])
-        st.write('全市场数量：',s['market_count'])
-        st.write('PM01_READY='+s['ready'])
-        st.write('当前：'+s['phase'])
+        obtained=datetime.fromisoformat(s['snapshot_time']).strftime('%Y-%m-%d %H:%M:%S')
+        st.write('行情日期：'+(s['d0'] or '等待刷新'))
+        st.caption('取得时间：'+obtained+' · UTC+8')
+        universe_source=s['trace'].get('UNIVERSE',{}).get('DATA_SOURCE','NONE')
+        st.caption('数据源：'+universe_source+'；行情/日线详情见来源审计')
+        st.write('全市场 '+str(s['market_count'])+' 只 · PM01_READY='+s['ready'])
+        if any(t.get('PRIMARY_SOURCE')=='FAIL' for t in s['trace'].values()):
+            st.caption('PRIMARY_SOURCE=FAIL · 已使用备用源，见来源审计')
+        st.caption('当前：'+s['phase'])
         if s['research_mode']=='YES': st.warning('RESEARCH_MODE=YES · NOT_LIVE_PRODUCTION')
-        if s['missing']: st.error('MISSING_INPUT='+', '.join(s['missing']))
-        if s['errors']: st.error('数据状态=FAIL；'+', '.join(s['errors']))
-        st.caption('SNAPSHOT_ID='+s['bundle_id'])
-        st.caption('SOURCE_TIMESTAMP='+s['source_timestamp'])
-        st.caption('冻结采集批次，不承诺交易所原子同秒快照；保留逐股源时间。')
-        st.json(s['trace'],expanded=False)
+        if s['missing']: st.caption('五源尚未齐备；缺失明细随复制文本输出。')
+        if s['errors'] and s['errors']!=['NOT_REFRESHED']: st.error('数据状态=FAIL；当前数据不完整，请查看来源审计。')
     def display_rows(rows,ranked=False):
         for r in rows:
             prefix=(f"{r['rank']:02d} · " if ranked else '')+r['code']+' '+r['name']
@@ -447,6 +473,10 @@ def render():
     encoded=json.dumps(text,ensure_ascii=True).replace('<','\\u003c')
     components.html('''<button id="copy" style="width:100%;padding:14px;border-radius:10px;background:#172b45;color:white;border:0;font-size:16px">复制给高级助理</button><div id="msg" role="status" style="font:14px sans-serif;padding:6px"></div><textarea id="fallback" readonly style="display:none;width:100%;height:120px"></textarea><script>const payload='''+encoded+''';document.getElementById('copy').onclick=async()=>{try{await navigator.clipboard.writeText(payload);document.getElementById('msg').textContent='已复制完整PM01 Reality';}catch(e){const t=document.getElementById('fallback');t.style.display='block';t.value=payload;t.select();try{if(!document.execCommand('copy'))throw Error();document.getElementById('msg').textContent='已复制完整PM01 Reality';}catch(e){document.getElementById('msg').textContent='浏览器限制复制，请长按下方文本全选复制';}}};</script>''',height=225)
     with st.expander('完整复制输出与来源审计'):
+        st.caption('SNAPSHOT_ID='+s['bundle_id'])
+        st.caption('SOURCE_TIMESTAMP='+s['source_timestamp'])
+        st.caption('冻结采集批次，不承诺交易所原子同秒快照；保留逐股源时间。')
+        st.json(s['trace'],expanded=False)
         st.code(text,language=None)
         st.download_button('下载本次冻结JSON',json.dumps(s,ensure_ascii=False,indent=2),file_name='pm01-'+s['bundle_id']+'.json',mime='application/json')
         st.caption('2026交易日历来源：'+SSE_CALENDAR+'；其他年份未核验时仅研究且不认证。')
