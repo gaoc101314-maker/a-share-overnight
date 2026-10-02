@@ -41,8 +41,8 @@ def merge(s):
             q=s['rows'].get(c,source)
             acc,reason=eligible(c,q['name'])
             combined[c]={**{f:UNKNOWN for f in FIELDS},'股票':q['name'],'代码':c,
-                'SECOND_BOARD':'WAITING_INPUT' if s['second_status']=='WAITING_INPUT' else ('UNKNOWN' if s['second_status']=='FAIL' else 'NOT_MEMBER'),
-                'LEADER_POOL':'WAITING_INPUT' if s['leader_status']=='WAITING_INPUT' else ('UNKNOWN' if s['leader_status']=='FAIL' else 'NOT_MEMBER'),
+                'SECOND_BOARD':'WAITING_INPUT' if s['second_status']=='WAITING_INPUT' else ('UNKNOWN' if s['second_status']!='PASS' else 'NOT_MEMBER'),
+                'LEADER_POOL':'WAITING_INPUT' if s['leader_status']=='WAITING_INPUT' else ('UNKNOWN' if s['leader_status']!='PASS' else 'NOT_MEMBER'),
                 'CURRENT_PRICE':q['price'],'CURRENT_RETURN':q['day_pct'],
                 'ACCOUNT_ELIGIBLE':acc,'ACCOUNT_INELIGIBLE_REASON':reason,
                 'DATA_SOURCE':q.get('quote_source',UNKNOWN),'SOURCE_TIMESTAMP':q['source_timestamp'],
@@ -57,6 +57,10 @@ def merge(s):
         for r in s[key]:
             add(r)
             combined[r['code']][label]='MEMBER'
+            if r.get('POOL_ASSET'):
+                combined[r['code']]['SOURCE_TRACE'][label]={'source':'AUTO_POOL_ASSET',
+                    'version_id':r['POOL_VERSION_ID'],'asof_date':r['POOL_ASOF_DATE'],
+                    'asset':r['POOL_ASSET']}
     return [combined[c] for c in sorted(combined)]
 
 

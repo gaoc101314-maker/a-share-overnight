@@ -151,7 +151,7 @@ def tencent_quotes(codes):
                         return 'UNKNOWN'
                 if not all(math.isfinite(v) for v in (price,pct)):
                     raise ValueError('INVALID_QUOTE')
-                rows.append(dict(code=sym[2:],name=a[1],price=price,day_pct=pct,prev_close=number(4),day_high=number(33),day_low=number(34),turnover=number(38),amount=number(37)*10000 if isinstance(number(37),float) else 'UNKNOWN',source_timestamp=stamp.isoformat(),quote_source=host,primary_source='PASS' if host=='https://qt.gtimg.cn' else 'FAIL'))
+                rows.append(dict(code=sym[2:],name=a[1],price=price,day_pct=pct,prev_close=number(4),day_high=number(33),day_low=number(34),limit_up_price=number(47),turnover=number(38),amount=number(37)*10000 if isinstance(number(37),float) else 'UNKNOWN',source_timestamp=stamp.isoformat(),quote_source=host,primary_source='PASS' if host=='https://qt.gtimg.cn' else 'FAIL'))
             if {r['code'] for r in rows}!=set(codes):
                 raise ValueError('QUOTE_BATCH_INCOMPLETE')
             return rows
@@ -439,7 +439,14 @@ def render():
     st.markdown('<style>h1 {font-size:28px !important;line-height:1.2 !important} .block-container {padding-top:2.5rem}</style>',unsafe_allow_html=True)
     st.title('A股 Production Reality')
     st.caption('PM01 五源输入')
-    st.caption('只供给市场Reality；正式二板池和总龙头池由公司提供。')
+    st.caption('只供给市场Reality；自动池的正式资格与数据缺口单独显示，公司粘贴池保留为对照入口。')
+    from auto_pools import load_latest,render_status,connect
+    auto_version=load_latest()
+    pool_mode=st.radio('认证池来源',['自动维护池','公司粘贴池'],horizontal=True)
+    if pool_mode=='自动维护池':
+        render_status(st,auto_version)
+        if auto_version and auto_version.get('snapshot') and not st.session_state.get('pm01_snapshot',{}).get('d0'):
+            st.session_state['pm01_snapshot']=auto_version['snapshot']
     # Render placeholders first so inputs remain below the main refresh control.
     card=st.empty()
     refresh_clicked=st.button('刷新PM01 Reality',type='primary',use_container_width=True)
@@ -472,6 +479,8 @@ def render():
             st.warning(('二板总池' if key=='second' else '总龙头池')+'日期已变化：请重新粘贴本次D0的公司正式池。')
     second,leader=inputs['second'],inputs['leader']
     s=freeze(snapshot,second,leader)
+    if pool_mode=='自动维护池':
+        s=connect(s,auto_version)
     with card.container(border=True):
         obtained=datetime.fromisoformat(s['snapshot_time']).strftime('%Y-%m-%d %H:%M:%S')
         st.write('行情日期：'+(s['d0'] or '等待刷新'))
@@ -486,10 +495,12 @@ def render():
         if s['missing']: st.caption('五源尚未齐备；缺失明细随复制文本输出。')
         if s['errors'] and s['errors']!=['NOT_REFRESHED']: st.error('数据状态=FAIL；当前数据不完整，请查看来源审计。')
     def display_rows(rows,ranked=False):
+        def value(v,digits):
+            return f'{v:.{digits}f}' if isinstance(v,(float,int)) and math.isfinite(v) else 'UNKNOWN'
         for r in rows:
             prefix=(f"{r['rank']:02d} · " if ranked else '')+r['code']+' '+r['name']
             st.write(prefix)
-            st.caption((f"周期 {r['period_pct']:+.4f}% · " if ranked else '')+f"当前价 {r['price']:.3f} · 当日 {r['day_pct']:+.4f}%")
+            st.caption(('周期 '+value(r.get('period_pct'),4)+'% · ' if ranked else '')+'当前价 '+value(r['price'],3)+' · 当日 '+value(r['day_pct'],4)+'%')
             st.caption('MARKET_UNIVERSE=YES · ACCOUNT_ELIGIBLE='+r['account_eligible']+' · '+r['account_reason'])
     for i,n in enumerate(PERIODS):
         with expanders[i]:
