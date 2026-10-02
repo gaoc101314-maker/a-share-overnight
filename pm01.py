@@ -143,9 +143,15 @@ def tencent_quotes(codes):
                 a=body.split('~')
                 stamp=datetime.strptime(a[30],'%Y%m%d%H%M%S').replace(tzinfo=CN)
                 price,pct=float(a[3]),float(a[32])
+                def number(i):
+                    try:
+                        value=float(a[i])
+                        return value if math.isfinite(value) else 'UNKNOWN'
+                    except (ValueError,IndexError):
+                        return 'UNKNOWN'
                 if not all(math.isfinite(v) for v in (price,pct)):
                     raise ValueError('INVALID_QUOTE')
-                rows.append(dict(code=sym[2:],name=a[1],price=price,day_pct=pct,source_timestamp=stamp.isoformat(),quote_source=host,primary_source='PASS' if host=='https://qt.gtimg.cn' else 'FAIL'))
+                rows.append(dict(code=sym[2:],name=a[1],price=price,day_pct=pct,prev_close=number(4),day_high=number(33),day_low=number(34),turnover=number(38),amount=number(37)*10000 if isinstance(number(37),float) else 'UNKNOWN',source_timestamp=stamp.isoformat(),quote_source=host,primary_source='PASS' if host=='https://qt.gtimg.cn' else 'FAIL'))
             if {r['code'] for r in rows}!=set(codes):
                 raise ValueError('QUOTE_BATCH_INCOMPLETE')
             return rows
@@ -495,6 +501,8 @@ def render():
         with expanders[i]:
             st.write(('SECOND_BOARD_POOL_STATUS=' if key=='second' else 'LEADER_POOL_STATUS=')+s[key+'_status'])
             display_rows(s[key])
+    from pm03 import render as render_blind
+    render_blind(st,s,progress if refresh_clicked else None)
     text=export_text(s)
     # Entire payload stays in the browser iframe; no server or third-party clipboard service.
     encoded=json.dumps(text,ensure_ascii=True).replace('<','\\u003c')
