@@ -51,11 +51,36 @@ class Reality(unittest.TestCase):
         r=pm03.merge(s)
         self.assertEqual(len(r),1)
         self.assertEqual([r[0]['SOURCE_'+n+'D_RANK'] for n in ['3','5','10']],[1,2,3])
-        self.assertEqual(r[0]['SECOND_BOARD'],'WAITING_INPUT')
+        self.assertEqual(r[0]['SECOND_BOARD'],'UNKNOWN')
         p=pm03.build(s,{})
         self.assertEqual(p['blind_ready'],'NO')
         self.assertEqual(p['path_status'],'PARTIAL')
         self.assertTrue(pm03.export_text(p).endswith('END_PM03_BLIND_UNIVERSE'))
+
+    def test_confirmed_absence_and_unknown_are_distinct(self):
+        s=pm01.freeze(pm01.blank_snapshot())
+        s.update(rows={'600000':self.q},top={'3':[{**self.q,'rank':1}],'5':[],'10':[]},
+            pool_status={'3':'PASS','5':'PASS','10':'FAIL'},second_status='PASS',leader_status='PARTIAL')
+        r=pm03.merge(s)[0]
+        self.assertEqual(r['SOURCE_5D_RANK'],'-')
+        self.assertEqual(r['SOURCE_10D_RANK'],'UNKNOWN')
+        self.assertEqual(r['SECOND_BOARD'],'NO')
+        self.assertEqual(r['LEADER_POOL'],'UNKNOWN')
+        s['leader']=[self.q]
+        self.assertEqual(pm03.merge(s)[0]['LEADER_POOL'],'YES')
+
+    def test_ready_requires_identity_path_and_freeze(self):
+        s=pm01.freeze(pm01.blank_snapshot())
+        s.update(rows={'600000':self.q},top={n:[{**self.q,'rank':1}] for n in ('3','5','10')},
+            pool_status={n:'PASS' for n in ('3','5','10')},second_status='PASS',leader_status='PASS',
+            same_snapshot='PASS',input_freeze='PASS')
+        with patch('pm03.get',return_value=self.response('20260930')):
+            paths={'600000':pm03.path_reality(self.q,'2026-09-30')}
+        self.assertEqual(pm03.build(s,paths)['blind_ready'],'YES')
+        s['input_freeze']='FAIL'
+        self.assertEqual(pm03.build(s,paths)['blind_ready'],'NO')
+        s['input_freeze']='PASS';s['rows']['600000']['price']='UNKNOWN'
+        self.assertEqual(pm03.build(s,paths)['blind_ready'],'NO')
 
 
 if __name__=='__main__':

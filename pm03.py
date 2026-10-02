@@ -35,19 +35,25 @@ def distance(price,high):
 def merge(s):
     """按代码稳定排序只为展示；不使用账户资格删减或重排认证池。"""
     combined={}
+    # 已完整生成的50行产品，其名单外身份可以确认；底层全市场历史认证缺口另行报告。
+    output_known={n:s['pool_status'][n]=='PASS' or (
+        len(s['top'][n])==50 and len({r['code'] for r in s['top'][n]})==50 and
+        {r['rank'] for r in s['top'][n]}==set(range(1,51))) for n in ('3','5','10')}
     def add(source, rank=None):
         c=source['code']
         if c not in combined:
             q=s['rows'].get(c,source)
             acc,reason=eligible(c,q['name'])
             combined[c]={**{f:UNKNOWN for f in FIELDS},'股票':q['name'],'代码':c,
-                'SECOND_BOARD':'WAITING_INPUT' if s['second_status']=='WAITING_INPUT' else ('UNKNOWN' if s['second_status']!='PASS' else 'NOT_MEMBER'),
-                'LEADER_POOL':'WAITING_INPUT' if s['leader_status']=='WAITING_INPUT' else ('UNKNOWN' if s['leader_status']!='PASS' else 'NOT_MEMBER'),
+                'SECOND_BOARD':'NO' if s['second_status']=='PASS' else UNKNOWN,
+                'LEADER_POOL':'NO' if s['leader_status']=='PASS' else UNKNOWN,
                 'CURRENT_PRICE':q['price'],'CURRENT_RETURN':q['day_pct'],
                 'ACCOUNT_ELIGIBLE':acc,'ACCOUNT_INELIGIBLE_REASON':reason,
                 'DATA_SOURCE':q.get('quote_source',UNKNOWN),'SOURCE_TIMESTAMP':q['source_timestamp'],
                 'SNAPSHOT_ID':s['bundle_id'],'SOURCE_TRACE':{'CURRENT':{'source':q.get('quote_source',UNKNOWN),'timestamp':q['source_timestamp']}},
                 'PATH_ERRORS':[]}
+            for n in ('3','5','10'):
+                combined[c]['SOURCE_'+n+'D_RANK']='-' if output_known[n] else UNKNOWN
         if rank:
             combined[c]['SOURCE_'+rank+'D_RANK']=source['rank']
     for n in ('3','5','10'):
@@ -56,7 +62,7 @@ def merge(s):
     for key,label in [('second','SECOND_BOARD'),('leader','LEADER_POOL')]:
         for r in s[key]:
             add(r)
-            combined[r['code']][label]='MEMBER'
+            combined[r['code']][label]='YES'
             if r.get('POOL_ASSET'):
                 combined[r['code']]['SOURCE_TRACE'][label]={'source':'AUTO_POOL_ASSET',
                     'version_id':r['POOL_VERSION_ID'],'asof_date':r['POOL_ASOF_DATE'],
@@ -77,6 +83,8 @@ def path_reality(q,d0):
             DAY_LOW_RETURN=percent(low,prev),CURRENT_TO_HIGH=distance(q['price'],high),
             TURNOVER=finite(q.get('turnover')),AMOUNT=finite(q.get('amount')))
     quote_fields()
+    if high==UNKNOWN or low==UNKNOWN:
+        errors.append('DAY_EXTREMA_UNAVAILABLE'+(':ZERO_AMOUNT_NO_TRADED_EXTREMA' if finite(q.get('amount'))==0 else ''))
     trace['DAY_QUOTE']={'source':quote_source,'timestamp':q['source_timestamp'],'amount_unit':'CNY','return_unit':'PERCENT'}
     data=None
     source=None
@@ -138,8 +146,13 @@ def build(s,paths):
         else:
             r['PATH_ERRORS']=['PATH_FETCH_FAILED']
     gaps=s.get('history_failures',{})
-    missing=[{'code':r['代码'],'fields':[f for f in PATH_FIELDS if r[f]==UNKNOWN]} for r in rows if any(r[f]==UNKNOWN for f in PATH_FIELDS)]
+    required_path=['CURRENT_PRICE','CURRENT_RETURN']+PATH_FIELDS
+    missing=[{'code':r['代码'],'fields':[f for f in required_path if r[f]==UNKNOWN]} for r in rows if any(r[f]==UNKNOWN for f in required_path)]
     status='PASS' if rows and not missing else ('PARTIAL' if rows else 'FAIL')
+    identity_fields=['SOURCE_'+n+'D_RANK' for n in ('3','5','10')]+['SECOND_BOARD','LEADER_POOL']
+    identity_missing=[{'code':r['代码'],'fields':[f for f in identity_fields if r[f]==UNKNOWN]} for r in rows if any(r[f]==UNKNOWN for f in identity_fields)]
+    five_source='PASS' if rows and not identity_missing and all(s['pool_status'][n]=='PASS' for n in ('3','5','10')) and s['second_status']=='PASS' and s['leader_status']=='PASS' and s['same_snapshot']=='PASS' and s['input_freeze']=='PASS' else 'FAIL'
+    unknown_detail=[{'code':r['代码'],'name':r['股票'],'fields':[f for f in FIELDS if r[f]==UNKNOWN]} for r in rows if any(r[f]==UNKNOWN for f in FIELDS)]
     return {'d0':s['d0'],'snapshot_time':s['snapshot_time'],'snapshot_id':s['bundle_id'],
         'data_source':s['data_source']+';PM03_PATH='+(';'.join(sorted({r['DATA_SOURCE'] for r in rows})) or 'NONE'),
         'research_mode':s['research_mode'],'rows':rows,'unique_count':len(rows),
@@ -147,20 +160,29 @@ def build(s,paths):
         'top_output':{n:f"{len(s['top'][n])}/50" for n in ('3','5','10')},
         'pool_status':s['pool_status'],'history_gap':len(gaps),'history_gap_detail':gaps,
         'path_gap_detail':missing,'second_status':s['second_status'],'leader_status':s['leader_status'],
-        'blind_ready':'YES' if status=='PASS' and all(s['pool_status'][n]=='PASS' for n in ('3','5','10')) and s['second_status']=='PASS' and s['leader_status']=='PASS' else 'NO'}
+        'second_count':len(s['second']),'leader_count':len(s['leader']),
+        'five_source_status':five_source,'identity_gap_detail':identity_missing,
+        'unknown_detail':unknown_detail,'unknown_count':sum(len(r['fields']) for r in unknown_detail),
+        'unknown_stock_count':len(unknown_detail),
+        'blind_ready':'YES' if status=='PASS' and five_source=='PASS' else 'NO'}
 
 
 def export_text(p):
     lines=['PM03_BLIND_UNIVERSE',f"D0_DATE={p['d0']}",f"SNAPSHOT_TIME={p['snapshot_time']}",
         f"SNAPSHOT_ID={p['snapshot_id']}",f"DATA_SOURCE={p['data_source']}",
-        f"RESEARCH_MODE={p['research_mode']}",f"UNIQUE_COUNT={p['unique_count']}",f"PATH_DATA_STATUS={p['path_status']}",
+        f"RESEARCH_MODE={p['research_mode']}",f"UNIQUE_COUNT={p['unique_count']}",f"FIVE_SOURCE_STATUS={p['five_source_status']}",f"PATH_DATA_STATUS={p['path_status']}",
+        f"SECOND_BOARD_POOL_COUNT={p['second_count']}",f"LEADER_POOL_COUNT={p['leader_count']}",
+        f"UNKNOWN_FIELD_COUNT={p['unknown_count']}",f"UNKNOWN_STOCK_COUNT={p['unknown_stock_count']}",
+        'STATE_SEMANTICS=-:confirmed outside Top50; YES:in pool; NO:confirmed outside pool; UNKNOWN:data not obtained',
+        'TOP50_ABSENCE_SCOPE=Outside the emitted complete 50-row product; historical market certification is reported separately',
         'RETURN_UNIT=PERCENT','AMOUNT_UNIT=CNY','CURRENT_TO_HIGH_UNIT=DECIMAL_RATIO','CURRENT_TO_HIGH_FORMULA=CURRENT_PRICE / DAY_HIGH - 1',
         'MINUTE_RULE=Exact source minute 14:00/14:30; no interpolation; D0 date verified; full intraday chart not included',
         'UNIVERSE_ORDER=CODE_ASC; not a selection ranking',f"SECOND_BOARD_POOL_STATUS={p['second_status']}",f"LEADER_POOL_STATUS={p['leader_status']}"]
     for n in ('3','5','10'):
         lines += [f"{n}D_TOP50_OUTPUT={p['top_output'][n]}",f"{n}D_CERTIFICATION_STATUS={p['pool_status'][n]}"]
     lines += [f"HISTORY_DATA_GAP={p['history_gap']}",'HISTORY_GAP_DETAIL='+json.dumps(p['history_gap_detail'],ensure_ascii=False),
-        'PATH_GAP_DETAIL='+json.dumps(p['path_gap_detail'],ensure_ascii=False),f"BLIND_TEST_READY={p['blind_ready']}"]
+        'PATH_GAP_DETAIL='+json.dumps(p['path_gap_detail'],ensure_ascii=False),
+        'UNKNOWN_DETAIL='+json.dumps(p['unknown_detail'],ensure_ascii=False),f"BLIND_TEST_READY={p['blind_ready']}"]
     def value(v):
         if isinstance(v,float): return f'{v:.6f}'
         return str(v).replace('\n',' ').replace('\r',' ').replace('｜','/')
@@ -175,7 +197,7 @@ def render(st,s,progress=None):
     import pandas as pd
     import streamlit.components.v1 as components
     st.subheader('市场认证去重宇宙')
-    st.caption('V0.1.1 · PM03五候选盲生成 Reality；网页只供给数据，不生成五候选。')
+    st.caption('V0.1.2 · PM03五候选盲生成 Reality；网页只供给数据，不生成五候选。')
     identity=s['snapshot_id']
     cache=st.session_state.get('pm03_paths',{})
     if cache.get('snapshot_id')!=identity:
@@ -198,6 +220,9 @@ def render(st,s,progress=None):
     st.write(f"UNIQUE_COUNT={p['unique_count']} · ACCOUNT_ELIGIBLE_COUNT={p['account_count']} · PATH_DATA_STATUS={p['path_status']}")
     st.caption(' · '.join(n+'D_TOP50_OUTPUT='+p['top_output'][n] for n in ('3','5','10')))
     st.caption(f"HISTORY_DATA_GAP={p['history_gap']} · BLIND_TEST_READY={p['blind_ready']}")
+    st.write(f"FIVE_SOURCE_STATUS={p['five_source_status']} · 二板={p['second_count']} · 龙头={p['leader_count']}")
+    st.caption(f"UNKNOWN_FIELD_COUNT={p['unknown_count']} · UNKNOWN_STOCK_COUNT={p['unknown_stock_count']}")
+    st.caption('排名“-”表示已确认不在Top50；YES/NO表示池身份；UNKNOWN仅表示未取得或未通过完整性核验。')
     if p['blind_ready']=='NO':
         st.warning('当前产品有未齐输入或数据缺口，可用于缺口评审，不标记为完整五源盲测就绪。')
     if rows:

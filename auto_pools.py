@@ -27,13 +27,14 @@ def raw_closes(code,anchor):
     with lock:
         path=CACHE/'raw_closes'/(code+'-'+anchor+'.json')
         try:
-            return json.loads(path.read_text(encoding='utf8'))
+            cached=json.loads(path.read_text(encoding='utf8'))
+            if anchor in cached:return cached
         except (OSError,ValueError):
             pass
         errors=[]
         for endpoint in ('https://web.ifzq.gtimg.cn/appstock/app/fqkline/get','https://proxy.finance.qq.com/ifzqgtimg/appstock/app/fqkline/get'):
             try:
-                d=pm01.get(endpoint,{'param':pm01.symbol(code)+',day,,'+anchor+',100,'}).json()['data'][pm01.symbol(code)]
+                d=pm01.get(endpoint,{'param':pm01.symbol(code)+',day,,,100,'}).json()['data'][pm01.symbol(code)]
                 closes={r[0]:float(r[2]) for r in d.get('day',[]) if r[0]<=anchor and float(r[2])>0}
                 if not closes:raise ValueError('DAILY_EMPTY')
                 atomic_json(path,closes)
@@ -155,7 +156,16 @@ def histories(snapshot):
                 closes[d0]=q['price']
             result[code]=closes
         except (OSError,ValueError,KeyError,TypeError):
-            gaps.setdefault(code,'HISTORY_UNAVAILABLE')
+            # 只复用已取得、按代码与D0隔离的未复权补充日线，不伪造停牌或上市前价格。
+            supplemental=CACHE/'raw_closes'/(code+'-'+d0+'.json')
+            try:
+                closes=json.loads(supplemental.read_text(encoding='utf8'))
+                result[code]={day:float(price) for day,price in closes.items() if day<=d0 and float(price)>0}
+                if q['price']>0 and q['source_timestamp'][:10]==d0:
+                    result[code][d0]=q['price']
+                gaps.pop(code,None)
+            except (OSError,ValueError,TypeError):
+                gaps.setdefault(code,'HISTORY_UNAVAILABLE')
     return result,gaps
 
 
@@ -173,7 +183,9 @@ def top50(day,prices,market_rows,universe_asof):
                 gaps.append(code);continue
             price=bars[day]
             prev=bars.get(dates[-2])
-            ranked.append({**q,'price':price,'day_pct':(price/prev-1)*100 if prev else 'UNKNOWN',
+            acc,reason=pm01.eligible(code,q['name'])
+            ranked.append({**q,'price':price,'day_pct':q['day_pct'] if day==universe_asof else ((price/prev-1)*100 if prev else 'UNKNOWN'),
+                'account_eligible':acc,'account_reason':reason,'market_universe':'YES',
                 'period_pct':(price/bars[base[n]]-1)*100,'price_date':day,'name_metadata_asof':universe_asof,
                 'source_timestamp':q['source_timestamp'] if day==universe_asof else day+' (DAILY_CLOSE; exact tick time UNKNOWN)',
                 'quote_source':q.get('quote_source','UNKNOWN') if day==universe_asof else 'HISTORICAL_UNADJUSTED_DAILY_CLOSE'})
@@ -295,6 +307,10 @@ def daily_version(day,top,second,leader,snapshot,previous=None):
     # 保存同D0行情与池版本，未来页面不把旧日期伪装为当天。
     if day==snapshot['d0']:
         copy_snapshot=copy.deepcopy(snapshot)
+        copy_snapshot['top']=copy.deepcopy(top['top'])
+        copy_snapshot['base_dates']=top['base_dates']
+        copy_snapshot['pool_status']={n:'PASS' if top['certified'] else 'FAIL' for n in ('3','5','10')}
+        copy_snapshot['history_failures']={c:'REQUIRED_TRADING_DAY_CLOSE_MISSING' for c in sorted(set().union(*[set(cs) for cs in top['missing'].values()]))}
         codes={r['code'] for n in top['top'].values() for r in n}|{r['code'] for r in second['rows']}|{r['code'] for r in leader['rows']}
         copy_snapshot['rows']={c:q for c,q in snapshot['rows'].items() if c in codes}
         result['snapshot']=copy_snapshot
@@ -317,11 +333,14 @@ def report(v):
     return '\n'.join(['FIVE_SOURCE_AUTO_V0.1','D0_DATE='+v['d0'],
         *[n+'D_TOP50='+str(len(v['top']['top'][n]))+'/50' for n in ('3','5','10')],
         'SECOND_BOARD_POOL_COUNT='+str(len(v['second_board']['rows'])),
+        'SECOND_BOARD_POOL_STATUS='+v['second_board']['status'],
         'SECOND_BOARD_NEW='+str(len(v['second_board']['new'])),
         'SECOND_BOARD_REMOVED='+('UNKNOWN' if v['second_board']['removed_status']!='VERIFIED' else str(len(v['second_board']['removed']))),
         'LEADER_POOL_COUNT='+str(len(v['leader_pool']['rows'])),
         'LEADER_POOL_NEW='+str(len(v['leader_pool']['new'])),
         'LEADER_POOL_REMOVED_MA20='+str(len(v['leader_pool']['removed_ma20'])),
+        'LEADER_POOL_REMOVED='+str(len(v['leader_pool']['removed_ma20'])),
+        'LEADER_POOL_STATUS='+v['leader_pool']['status'],
         'FIVE_SOURCE_STATUS='+v['five_source_status'],'VERSION_ID='+v['version_id'],
         'MODE='+v['mode'],'LEADER_SEED_COMPLETE='+str(v['leader_pool']['seed_complete']),
         'CONTINUITY_STATUS='+v['continuity_status'],'MANUAL_POOL_COMPARISON='+v['manual_pool_comparison']])
