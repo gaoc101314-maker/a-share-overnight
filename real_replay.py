@@ -136,7 +136,7 @@ def generate():
     p=make_product(s,paths,second,leader,names,version['version_id'])
     p['fetch_failures']=errors
     (ROOT/(PRODUCT+'.json')).write_text(json.dumps(p,ensure_ascii=False,indent=2,allow_nan=False),encoding='utf8')
-    (ROOT/(PRODUCT+'.txt')).write_text(export_text(p),encoding='utf-8-sig')
+    (ROOT/(PRODUCT+'.txt')).write_text(export_text(p),encoding='utf-8')
     (ROOT/'PM03_FIVE_SOURCE_REAL_REPLAY_receipt.json').write_text(json.dumps(receipt(p),ensure_ascii=False,indent=2),encoding='utf8')
     print(json.dumps(receipt(p),ensure_ascii=True))
 
@@ -167,8 +167,11 @@ def render():
     if p['blind_ready']=='NO':st.warning('身份已取得，仍有真实路径缺口。请连同UNKNOWN明细交给高级助理，不伪造盲测就绪。')
     text=export_text(p)
     encoded=json.dumps(text,ensure_ascii=True).replace('<','\\u003c')
-    components.html('''<button id="copy" style="width:100%;padding:15px;background:#172b45;color:white;border:0;border-radius:10px;font-size:16px">复制真实五源盲生成Reality</button><div id="msg" role="status"></div><textarea id="fallback" readonly style="display:none;width:100%;height:120px"></textarea><script>const payload='''+encoded+''';document.getElementById('copy').onclick=async()=>{try{await navigator.clipboard.writeText(payload);document.getElementById('msg').textContent='已复制完整2026-09-30真实五源Reality';}catch(e){const t=document.getElementById('fallback');t.style.display='block';t.value=payload;t.select();document.getElementById('msg').textContent=document.execCommand('copy')?'已复制完整2026-09-30真实五源Reality':'请长按文本全选复制';}};</script>''',height=200)
-    st.download_button('下载完整盲生成Reality',text.encode('utf-8-sig'),file_name=PRODUCT+'.txt',mime='text/plain')
+    copy_col, download_col=st.columns([3,2])
+    with copy_col:
+        components.html('''<button id="copy" style="width:100%;padding:15px;background:#172b45;color:white;border:0;border-radius:10px;font-size:16px">复制真实五源盲生成Reality</button><div id="msg" role="status"></div><textarea id="fallback" readonly style="display:none;width:100%;height:120px"></textarea><script>const payload='''+encoded+''';document.getElementById('copy').onclick=async()=>{try{await navigator.clipboard.writeText(payload);document.getElementById('msg').textContent='已复制完整2026-09-30真实五源Reality';}catch(e){const t=document.getElementById('fallback');t.style.display='block';t.value=payload;t.select();document.getElementById('msg').textContent=document.execCommand('copy')?'已复制完整2026-09-30真实五源Reality':'请长按文本全选复制';}};</script>''',height=110)
+    with download_col:
+        st.download_button('下载盲生成Reality',text.encode('utf-8'),file_name=PRODUCT+'.txt',mime='text/plain; charset=utf-8',use_container_width=True)
     with st.expander('市场认证去重宇宙'):
         columns=['股票','代码','SOURCE_3D_RANK','SOURCE_5D_RANK','SOURCE_10D_RANK','SECOND_BOARD','LEADER_POOL','CURRENT_RETURN','RETURN_1400','RETURN_1430','CURRENT_TO_HIGH','TURNOVER','ACCOUNT_ELIGIBLE']
         st.dataframe(pd.DataFrame(p['rows'])[columns].astype(str),hide_index=True,use_container_width=True)
