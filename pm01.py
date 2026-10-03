@@ -1,5 +1,6 @@
 """PM01 Reality: deterministic data supply; no strategy/AI/database writes."""
 import hashlib
+import gzip
 import copy
 import html
 import json
@@ -20,6 +21,7 @@ LOCAL = threading.local()
 CACHE_LOCK = threading.Lock()
 UNIVERSE_CACHE = None
 HISTORY_MEMORY = {}
+HISTORY_SEED = None
 PERIODS = (3, 5, 10)
 SSE_CALENDAR = 'https://www.sse.com.cn/disclosure/dealinstruc/closed/c/c_20251222_10802510.shtml'
 HOLIDAYS_2026 = [('01-01','01-03'),('02-15','02-23'),('04-04','04-06'),('05-01','05-05'),('06-19','06-21'),('09-25','09-27'),('10-01','10-07')]
@@ -173,6 +175,25 @@ def em_history(code, d0):
     return {a[0]:float(a[2]) for a in (line.split(',') for line in d['klines'])}
 
 
+def bundled_history(key, d0, bases):
+    """云端重启仍可复用核验过的历史基准价；日期不匹配绝不复用。"""
+    global HISTORY_SEED
+    with CACHE_LOCK:
+        if HISTORY_SEED is None:
+            try:
+                with gzip.open(Path(__file__).parent/'pm01_history_seed.json.gz', 'rt', encoding='utf8') as f:
+                    data=json.load(f)
+                HISTORY_SEED=data if data.get('format')==1 else {}
+            except (OSError, ValueError):
+                HISTORY_SEED={}
+        if HISTORY_SEED.get('d0')!=d0 or HISTORY_SEED.get('base_dates')!=bases:
+            return None
+        r=HISTORY_SEED.get('entries',{}).get(key)
+        if not r or not all(day<d0 and isinstance(r.get('closes',{}).get(day),(int,float)) and math.isfinite(r['closes'][day]) and r['closes'][day]>0 for day in bases):
+            return None
+        return copy.deepcopy({**r,'cache':'BUNDLED_VERIFIED_PRIOR_CLOSE'})
+
+
 def history(code, d0, bases):
     # Cache immutable prior-day closes only, keyed by required D0 and dates.
     key=hashlib.sha256((code+d0+','.join(bases)).encode()).hexdigest()
@@ -180,6 +201,11 @@ def history(code, d0, bases):
     with CACHE_LOCK:
         if key in HISTORY_MEMORY:
             return copy.deepcopy({**HISTORY_MEMORY[key], 'cache':'PRIOR_CLOSE_MEMORY'})
+    seeded=bundled_history(key,d0,bases)
+    if seeded is not None:
+        with CACHE_LOCK:
+            HISTORY_MEMORY[key]=seeded
+        return seeded
     folder=Path(__file__).parent/'.pm01_history'
     path=folder/(key+'.json')
     try:
@@ -281,12 +307,13 @@ def blank_snapshot(error='NOT_REFRESHED'):
     return dict(snapshot_id=uuid.uuid4().hex,d0='',snapshot_time=now_cn().isoformat(),data_source='NONE',source_timestamp='UNKNOWN',market_count=0,rows={},top={str(n):[] for n in PERIODS},pool_status={str(n):'FAIL' for n in PERIODS},errors=[error],same_snapshot='FAIL',fresh=False,trace={})
 
 
-def refresh(progress=None):
+def refresh(progress=None, stage=None):
     global UNIVERSE_CACHE
     s=blank_snapshot()
     def notify(done,total,elapsed):
         if progress: progress(done,total,elapsed)
     try:
+        if stage: stage('1/4 获取全市场代码列表')
         with CACHE_LOCK:
             cached=copy.deepcopy(UNIVERSE_CACHE)
         if cached and time.monotonic()-cached['at']<3600:
@@ -306,7 +333,8 @@ def refresh(progress=None):
         s['market_count']=len(universe)
         codes=sorted(x['code'] for x in universe)
         batches=[codes[i:i+60] for i in range(0,len(codes),60)]
-        q,failed=fanout(batches,tencent_quotes,notify,budget=180,workers=4)
+        if stage: stage('2/4 获取当前行情（重新请求，不复用旧报价）')
+        q,failed=fanout(batches,tencent_quotes,notify,budget=90,workers=4)
         quotes={r['code']:r for batch in q.values() for r in batch}
         s['rows']=quotes
         s['data_source']=s['trace']['UNIVERSE']['DATA_SOURCE']+';QUOTES='+','.join(sorted({r['quote_source'] for r in quotes.values()}))
@@ -342,7 +370,10 @@ def refresh(progress=None):
         s['unpriced_codes']=[r['code'] for r in quotes.values() if r['price']<=0]
         if stale or s['unpriced_codes']:
             s['errors'].append('NON_CURRENT_OR_UNPRICED_MARKET_QUOTES:'+str(len(stale)+len(s['unpriced_codes'])))
-        h,hfail=fanout(current,lambda r:history(r['code'],d0,bases),notify,budget=900,workers=6)
+        if stage: stage('3/4 历史基准价：优先核验缓存，补缺阶段最多90秒')
+        h,hfail=fanout(current,lambda r:history(r['code'],d0,bases),notify,budget=90,workers=8)
+        s['trace']['HISTORY_CACHE']={'VERIFIED_CACHE_HITS':sum('cache' in r for r in h.values()),'NETWORK_RESULTS':sum('cache' not in r for r in h.values()),'HISTORY_WAIT_LIMIT_SECONDS':90}
+        if stage: stage('4/4 计算三池排名与数据缺口')
         s['history_failures']=hfail
         history_sources={x['source'] for x in h.values()}
         quote_sources={x['quote_source'] for x in quotes.values()}
@@ -461,11 +492,16 @@ def render():
         # Remove previous live map before any request, including errors.
         st.session_state['pm01_snapshot']=blank_snapshot('REFRESH_IN_PROGRESS')
         with st.status('获取市场快照与历史收盘价…',expanded=True) as status:
-            st.write('首次需全市场历史下载；最长约20分钟。后续只复用已确认的历史收盘价，每次重新取得当前行情。')
+            st.write('优先复用核验过的历史基准价；当前行情重新请求。历史补缺最多等待90秒，超时会显示缺口，不冒充完整数据。')
+            stage_text=st.empty()
+            stage_name=['准备刷新']
+            def show_stage(label):
+                stage_name[0]=label
+                stage_text.info(label)
             bar=st.progress(0)
             def progress(done,total,elapsed):
-                bar.progress(min(done/max(total,1),1),text=f'本阶段 {done}/{total} · {elapsed:.0f} 秒')
-            s=refresh(progress)
+                bar.progress(min(done/max(total,1),1),text=f'{stage_name[0]} · {done}/{total} · {elapsed:.0f} 秒')
+            s=refresh(progress,show_stage)
             st.session_state['pm01_snapshot']=s
             status.update(label='数据已取得' if not s['errors'] else '数据不完整；请查看缺失信息',state='complete' if not s['errors'] else 'error',expanded=False)
     snapshot=st.session_state.get('pm01_snapshot',blank_snapshot())

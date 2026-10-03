@@ -209,7 +209,7 @@ def render(st,s,progress=None):
             bar=st.progress(0)
             def update(done,total,elapsed):
                 bar.progress(done/max(total,1),text=f'分时 {done}/{total} · {elapsed:.0f} 秒')
-            result,failed=fanout(needed,lambda q:path_reality(q,s['d0']),update,budget=120,workers=6)
+            result,failed=fanout(needed,lambda q:path_reality(q,s['d0']),update,budget=60,workers=8)
             cache['paths'].update(result)
             cache['attempted'] += [q['code'] for q in needed]
             status.update(label='分时Reality取得完成；缺失字段保留UNKNOWN',state='complete',expanded=False)
