@@ -175,8 +175,8 @@ def em_history(code, d0):
     return {a[0]:float(a[2]) for a in (line.split(',') for line in d['klines'])}
 
 
-def bundled_history(key, d0, bases):
-    """云端重启仍可复用核验过的历史基准价；日期不匹配绝不复用。"""
+def bundled_history(key, d0, bases, code=None):
+    """云端重启或换日后，仅复用覆盖全部精确基准日期的历史收盘价。"""
     global HISTORY_SEED
     with CACHE_LOCK:
         if HISTORY_SEED is None:
@@ -187,12 +187,31 @@ def bundled_history(key, d0, bases):
             except (OSError, ValueError):
                 HISTORY_SEED={}
         if HISTORY_SEED.get('d0')!=d0 or HISTORY_SEED.get('base_dates')!=bases:
-            return None
+            if code is None or not HISTORY_SEED.get('d0') or not isinstance(HISTORY_SEED.get('base_dates'), list):
+                return None
+            key=hashlib.sha256((code+HISTORY_SEED['d0']+','.join(HISTORY_SEED['base_dates'])).encode()).hexdigest()
         r=HISTORY_SEED.get('entries',{}).get(key)
-        if not r or not all(day<d0 and isinstance(r.get('closes',{}).get(day),(int,float)) and math.isfinite(r['closes'][day]) and r['closes'][day]>0 for day in bases):
+        valid=reusable_prior_closes(r,d0,bases)
+        if valid is None:
             return None
-        return copy.deepcopy({**r,'cache':'BUNDLED_VERIFIED_PRIOR_CLOSE'})
+        return {**valid,'cache':'BUNDLED_VERIFIED_PRIOR_CLOSE'}
 
+
+
+def reusable_prior_closes(record, d0, bases):
+    """Reuse exact immutable dates only, never cached current quotes."""
+    sources={'TENCENT_RAW_DAILY','TENCENT_RAW_KLINE_BACKUP','TENCENT_PROXY_RAW_BACKUP','SINA_RAW_DAILY_BACKUP','EASTMONEY_RAW_DAILY'}
+    if not isinstance(record,dict) or record.get('source') not in sources:
+        return None
+    closes=record.get('closes',{})
+    if not isinstance(closes,dict) or not bases or not all(
+        day<d0 and isinstance(closes.get(day),(int,float)) and not isinstance(closes[day],bool)
+        and math.isfinite(closes[day]) and closes[day]>0 for day in bases):
+        return None
+    result=copy.deepcopy(record)
+    result['closes']={day:value for day,value in closes.items() if day<d0}
+    result['cache']='EXACT_DATE_PRIOR_CLOSE_REUSE'
+    return result
 
 def history(code, d0, bases):
     # Cache immutable prior-day closes only, keyed by required D0 and dates.
@@ -201,7 +220,7 @@ def history(code, d0, bases):
     with CACHE_LOCK:
         if key in HISTORY_MEMORY:
             return copy.deepcopy({**HISTORY_MEMORY[key], 'cache':'PRIOR_CLOSE_MEMORY'})
-    seeded=bundled_history(key,d0,bases)
+    seeded=bundled_history(key,d0,bases,code)
     if seeded is not None:
         with CACHE_LOCK:
             HISTORY_MEMORY[key]=seeded
@@ -217,6 +236,15 @@ def history(code, d0, bases):
                 HISTORY_MEMORY[key]=cached
             return {**cached,'cache':'PRIOR_CLOSE_CACHE'}
     except (OSError,ValueError,KeyError):
+        pass
+    reusable_path=folder/'by_code'/(code+'.json')
+    try:
+        reused=reusable_prior_closes(json.loads(reusable_path.read_text(encoding='utf8')),d0,bases)
+        if reused:
+            with CACHE_LOCK:
+                HISTORY_MEMORY[key]=reused
+            return reused
+    except (OSError,ValueError,TypeError):
         pass
     closes=None
     source=None
@@ -271,6 +299,10 @@ def history(code, d0, bases):
         temp=path.with_suffix('.'+uuid.uuid4().hex+'.tmp')
         temp.write_text(json.dumps(result),encoding='utf8')
         temp.replace(path)
+        reusable_path.parent.mkdir(exist_ok=True)
+        reusable_temp=reusable_path.with_suffix('.'+uuid.uuid4().hex+'.tmp')
+        reusable_temp.write_text(json.dumps(result),encoding='utf8')
+        reusable_temp.replace(reusable_path)
     except OSError:
         pass
     return result
@@ -562,3 +594,5 @@ def render():
         st.code(text,language=None)
         st.download_button('下载本次冻结JSON',json.dumps(s,ensure_ascii=False,indent=2),file_name='pm01-'+s['bundle_id']+'.json',mime='application/json')
         st.caption('2026交易日历来源：'+SSE_CALENDAR+'；其他年份未核验时仅研究且不认证。')
+
+
