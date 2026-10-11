@@ -509,7 +509,15 @@ def render():
     st.caption('只供给市场Reality；自动池的正式资格与数据缺口单独显示，公司粘贴池保留为对照入口。')
     from auto_pools import load_latest,render_status,connect
     auto_version=load_latest()
-    pool_mode=st.radio('认证池来源',['自动维护池','公司粘贴池'],horizontal=True)
+    pool_mode=st.radio('认证池来源',['公司正式池（已批准继承）','自动维护池','公司粘贴池'],horizontal=True)
+    formal=None
+    if pool_mode=='公司正式池（已批准继承）':
+        try:
+            from formal_pool_inputs import load
+            formal=load()
+            st.caption('公司成员来源：'+formal['source_version']+'；仅沿用已批准成员，行情重新取得，未生成新的维护池。')
+        except (OSError,ValueError,KeyError) as error:
+            st.error('正式成员来源核验失败：'+str(error)+'；不会替换为研究池。')
     if pool_mode=='自动维护池':
         render_status(st,auto_version)
         if auto_version and auto_version.get('snapshot') and not st.session_state.get('pm01_snapshot',{}).get('d0'):
@@ -551,7 +559,15 @@ def render():
             inputs[key]=''
             st.warning(('二板总池' if key=='second' else '总龙头池')+'日期已变化：请重新粘贴本次D0的公司正式池。')
     second,leader=inputs['second'],inputs['leader']
+    if pool_mode=='公司正式池（已批准继承）':
+        second,leader=(formal['second'],formal['leader']) if formal else ('','')
     s=freeze(snapshot,second,leader)
+    if formal:
+        s['trace']['COMPANY_POOL_SOURCE']={k:formal[k] for k in ('source_version','source_date','scope')}
+        for key,label in [('second','SECOND_BOARD_POOL'),('leader','LEADER_POOL')]:
+            evidence={'POOL_SOURCE_VERSION':formal['source_version'],'POOL_SOURCE_DATE':formal['source_date'],'POOL_MEMBERSHIP_SCOPE':formal['scope']}
+            s['pool_metadata'][label].update(evidence)
+            for row in s[key]:row.update(evidence)
     if pool_mode=='自动维护池':
         s=connect(s,auto_version)
     with card.container(border=True):
