@@ -502,6 +502,7 @@ def render():
     st.markdown('<style>h1 {font-size:28px !important;line-height:1.2 !important} .block-container {padding-top:2.5rem}</style>',unsafe_allow_html=True)
     st.title('A股 Production Reality')
     st.caption('PM01 五源输入')
+    st.caption('性能版本：2026-10-11 · 精确历史缓存复用 · 首屏不自动补取旧分时')
     st.caption('只供给市场Reality；自动池的正式资格与数据缺口单独显示，公司粘贴池保留为对照入口。')
     from auto_pools import load_latest,render_status,connect
     auto_version=load_latest()
@@ -521,6 +522,7 @@ def render():
     with expanders[4]:
         leader=st.text_area('总龙头池｜粘贴本次D0正式池代码',key='pm01_leader',on_change=bind_input_day,args=('leader',),placeholder='600000\n000001')
     if refresh_clicked:
+        st.session_state['pm01_user_refreshed']=True
         # Remove previous live map before any request, including errors.
         st.session_state['pm01_snapshot']=blank_snapshot('REFRESH_IN_PROGRESS')
         with st.status('获取市场快照与历史收盘价…',expanded=True) as status:
@@ -581,7 +583,10 @@ def render():
             st.write(('SECOND_BOARD_POOL_STATUS=' if key=='second' else 'LEADER_POOL_STATUS=')+s[key+'_status'])
             display_rows(s[key])
     from pm03 import render as render_blind
-    render_blind(st,s,progress if refresh_clicked else None)
+    if st.session_state.get('pm01_user_refreshed'):
+        render_blind(st,s,progress if refresh_clicked else None)
+    else:
+        st.info('已载入研究池摘要。点击刷新取得最新行情与完整路径；首次打开不自动下载旧日期分时。研究摘要不代表当天Production可用。')
     text=export_text(s)
     # Entire payload stays in the browser iframe; no server or third-party clipboard service.
     encoded=json.dumps(text,ensure_ascii=True).replace('<','\\u003c')
