@@ -67,6 +67,10 @@ def merge(s):
                 combined[r['code']]['SOURCE_TRACE'][label]={'source':r['POOL_ASSET'].get('source','AUTO_POOL_ASSET'),
                     'version_id':r['POOL_VERSION_ID'],'asof_date':r['POOL_ASOF_DATE'],
                     'asset':r['POOL_ASSET']}
+            elif r.get('POOL_SOURCE_VERSION'):
+                combined[r['code']]['SOURCE_TRACE'][label]={'source':'COMPANY_OFFICIAL_CSV_SEED',
+                    'version_id':r['POOL_SOURCE_VERSION'],'asof_date':r['POOL_SOURCE_DATE'],
+                    'scope':r['POOL_MEMBERSHIP_SCOPE']}
     return [combined[c] for c in sorted(combined)]
 
 
