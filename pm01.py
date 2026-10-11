@@ -403,7 +403,13 @@ def refresh(progress=None, stage=None):
         if stale or s['unpriced_codes']:
             s['errors'].append('NON_CURRENT_OR_UNPRICED_MARKET_QUOTES:'+str(len(stale)+len(s['unpriced_codes'])))
         if stage: stage('3/4 历史基准价：优先核验缓存，补缺阶段最多90秒')
-        h,hfail=fanout(current,lambda r:history(r['code'],d0,bases),notify,budget=90,workers=8)
+        from verified_web_history import prime
+        special=prime(d0,bases,[r['code'] for r in current])
+        def history_job(r):
+            if r['code'] in special:
+                raise ValueError('PER_PERIOD_VERIFIED_EVIDENCE_REQUIRED')
+            return history(r['code'],d0,bases)
+        h,hfail=fanout(current,history_job,notify,budget=90,workers=8)
         s['trace']['HISTORY_CACHE']={'VERIFIED_CACHE_HITS':sum('cache' in r for r in h.values()),'NETWORK_RESULTS':sum('cache' not in r for r in h.values()),'HISTORY_WAIT_LIMIT_SECONDS':90}
         if stage: stage('4/4 计算三池排名与数据缺口')
         s['history_failures']=hfail

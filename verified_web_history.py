@@ -9,6 +9,32 @@ from verified_history_seed import load_seed
 from pm03_quote_diagnostic import rank_evidence_provider, adapt_refresh
 
 
+def prime(d0, bases, codes):
+    """Prime exact known dates; proven special cases go to the evidence adapter."""
+    seed = load_seed()
+    ctx = context(seed, set(codes), calendar(d0), {str(n): b for n, b in zip((3,5,10), bases)})
+    special = set()
+    for code in codes:
+        record = seed['daily'].get(code)
+        if not record:
+            listing=ctx['listing_evidence'].get(code)
+            if listing and all(listing['listing_date']>b for b in bases):
+                special.add(code)
+            continue
+        closes = {d:p for d,p in record['closes'].items() if d<d0}
+        key = hashlib.sha256((code+d0+','.join(bases)).encode()).hexdigest()
+        if all(b in closes for b in bases):
+            with pm01.CACHE_LOCK:
+                pm01.HISTORY_MEMORY[key] = {**record, 'closes':closes,
+                    'primary_source':'PASS' if record['source']=='TENCENT_RAW_DAILY' else 'FAIL'}
+        else:
+            listing=ctx['listing_evidence'].get(code)
+            if all(b in closes or b in ctx['suspension_evidence'].get(code,{}) or
+                   (listing and listing['listing_date']>b) for b in bases):
+                special.add(code)
+    return special
+
+
 def repair(snapshot):
     if not snapshot.get('d0') or not snapshot.get('history_failures'):
         return snapshot
