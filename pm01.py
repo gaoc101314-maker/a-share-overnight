@@ -428,6 +428,9 @@ def refresh(progress=None, stage=None):
         s['fresh']=bool(quote_times) and all(t.date()==now_cn().date() and -30<=(now_cn()-t).total_seconds()<=300 for t in quote_times)
         s['same_snapshot']='PASS' if not s['errors'] else 'FAIL'
         s['history_complete_at']=now_cn().isoformat()
+        if s.get('history_failures'):
+            from verified_web_history import repair
+            s=repair(s)
     except Exception as e:
         s['errors'].append('DATA_SOURCE_FAILURE:'+type(e).__name__)
     return s
@@ -599,5 +602,3 @@ def render():
         st.code(text,language=None)
         st.download_button('下载本次冻结JSON',json.dumps(s,ensure_ascii=False,indent=2),file_name='pm01-'+s['bundle_id']+'.json',mime='application/json')
         st.caption('2026交易日历来源：'+SSE_CALENDAR+'；其他年份未核验时仅研究且不认证。')
-
-
