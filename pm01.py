@@ -530,6 +530,9 @@ def handoff_text(s):
     for key,label in [('second','二板总池'),('leader','龙头总池')]:
         lines.append(label+'：'+short(s.get(key+'_status','FAIL'),12)+f"，{len(s.get(key,[]))}条")
     lines.append(f'缺失项共{len(missing)}项；错误共{len(errors)}项。完整清单在同批JSON附件，以下仅为示例。')
+    failures=s.get('history_failures',[])
+    if failures:
+        lines.append(f'历史未认证对象共{len(failures)}只；示例：'+','.join(short(x,12) for x in list(failures)[:6]))
     if missing: lines.append('缺失示例：'+'；'.join(short(x,110) for x in missing[:3]))
     if errors: lines.append('错误示例：'+'；'.join(short(x,110) for x in errors[:3]))
     lines.append('请高级助理读取同批JSON附件并核对日期/批次。附件缺失时先取得附件，不把本卡当完整五源产品。')
@@ -640,11 +643,6 @@ def render():
         with expanders[i]:
             st.write(('SECOND_BOARD_POOL_STATUS=' if key=='second' else 'LEADER_POOL_STATUS=')+s[key+'_status'])
             display_rows(s[key])
-    from pm03 import render as render_blind
-    if st.session_state.get('pm01_user_refreshed'):
-        render_blind(st,s,progress if refresh_clicked else None)
-    else:
-        st.info('已载入研究池摘要。点击刷新取得最新行情与完整路径；首次打开不自动下载旧日期分时。研究摘要不代表当天Production可用。')
     text=export_text(s)
     handoff=handoff_text(s)
     st.caption(f'交接卡{len(handoff)}字；复制的是短卡，完整数据作为JSON附件发送。')
@@ -662,3 +660,9 @@ def render():
         st.code(text,language=None)
         st.download_button('下载本次冻结JSON',json.dumps(s,ensure_ascii=False,indent=2),file_name='pm01-'+s['bundle_id']+'.json',mime='application/json',on_click='ignore')
         st.caption('2026交易日历来源：'+SSE_CALENDAR+'；其他年份未核验时仅研究且不认证。')
+    # Make recovery handoff available before downstream minute-data work can block.
+    from pm03 import render as render_blind
+    if st.session_state.get('pm01_user_refreshed'):
+        render_blind(st,s,progress if refresh_clicked else None)
+    else:
+        st.info('已载入研究池摘要。点击刷新取得最新行情与完整路径；首次打开不自动下载旧日期分时。研究摘要不代表当天Production可用。')
