@@ -505,6 +505,39 @@ def export_text(s):
     return '\n'.join(lines)
 
 
+def handoff_text(s):
+    """Bounded chat handoff; full canonical input remains a separate attachment."""
+    def short(value, limit=140):
+        return str(value).replace('\n',' ').replace('\r',' ')[:limit]
+    errors=s.get('errors',[])
+    missing=s.get('missing',[])
+    legal=(s.get('ready')=='YES' and s.get('research_mode')=='NO'
+           and s.get('same_snapshot')=='PASS' and s.get('input_freeze')=='PASS'
+           and not errors and not missing)
+    lines=['PM01 数据交接卡（完整数据请附JSON文件）',
+           '结果：'+('数据门禁已通过，仍须读取完整原始产品。' if legal else '尚不能进入正式生产；请先处理下列缺口。'),
+           '行情日期：'+short(s.get('d0') or '未取得',20),
+           '取得时间：'+short(s.get('snapshot_time','未知'),40),
+           '批次：'+short(s.get('bundle_id','未知'),100),
+           '来源时间：'+short(s.get('source_timestamp','未知'),40),
+           '数据源：'+short(s.get('data_source','未知')),
+           '全市场数量：'+short(s.get('market_count',0),12),
+           'PM01_READY='+short(s.get('ready','NO'),8)+'；研究模式='+short(s.get('research_mode','YES'),8),
+           '当前时段：'+short(s.get('phase','未知'),70),
+           '同批次='+short(s.get('same_snapshot','FAIL'),12)+'；输入冻结='+short(s.get('input_freeze','FAIL'),12)]
+    for n in PERIODS:
+        lines.append(f"{n}日Top50：{short(s.get('pool_status',{}).get(str(n),'FAIL'),12)}，{len(s.get('top',{}).get(str(n),[]))}/50条")
+    for key,label in [('second','二板总池'),('leader','龙头总池')]:
+        lines.append(label+'：'+short(s.get(key+'_status','FAIL'),12)+f"，{len(s.get(key,[]))}条")
+    lines.append(f'缺失项共{len(missing)}项；错误共{len(errors)}项。完整清单在同批JSON附件，以下仅为示例。')
+    if missing: lines.append('缺失示例：'+'；'.join(short(x,110) for x in missing[:3]))
+    if errors: lines.append('错误示例：'+'；'.join(short(x,110) for x in errors[:3]))
+    lines.append('请高级助理读取同批JSON附件并核对日期/批次。附件缺失时先取得附件，不把本卡当完整五源产品。')
+    if not legal:
+        lines.append('需要候补时沿现有授权数据路径补当日真实输入，补齐并认证后再推进。不可用旧日数据、不完整候选或本摘要伪造通过。')
+    return '\n'.join(lines)
+
+
 def render():
     import streamlit as st
     import streamlit.components.v1 as components
@@ -613,10 +646,15 @@ def render():
     else:
         st.info('已载入研究池摘要。点击刷新取得最新行情与完整路径；首次打开不自动下载旧日期分时。研究摘要不代表当天Production可用。')
     text=export_text(s)
+    handoff=handoff_text(s)
+    st.caption(f'交接卡{len(handoff)}字；复制的是短卡，完整数据作为JSON附件发送。')
+    st.download_button('下载完整数据附件｜发给高级助理',json.dumps(s,ensure_ascii=False,indent=2),file_name='pm01-'+s['bundle_id']+'.json',mime='application/json')
     # Entire payload stays in the browser iframe; no server or third-party clipboard service.
-    encoded=json.dumps(text,ensure_ascii=True).replace('<','\\u003c')
-    components.html('''<button id="copy" style="width:100%;padding:14px;border-radius:10px;background:#172b45;color:white;border:0;font-size:16px">复制给高级助理</button><div id="msg" role="status" style="font:14px sans-serif;padding:6px"></div><textarea id="fallback" readonly style="display:none;width:100%;height:120px"></textarea><script>const payload='''+encoded+''';document.getElementById('copy').onclick=async()=>{try{await navigator.clipboard.writeText(payload);document.getElementById('msg').textContent='已复制完整PM01 Reality';}catch(e){const t=document.getElementById('fallback');t.style.display='block';t.value=payload;t.select();try{if(!document.execCommand('copy'))throw Error();document.getElementById('msg').textContent='已复制完整PM01 Reality';}catch(e){document.getElementById('msg').textContent='浏览器限制复制，请长按下方文本全选复制';}}};</script>''',height=225)
-    with st.expander('完整复制输出与来源审计'):
+    encoded=json.dumps(handoff,ensure_ascii=True).replace('<','\\u003c')
+    components.html('''<button id="copy" style="width:100%;padding:14px;border-radius:10px;background:#172b45;color:white;border:0;font-size:16px">复制给高级助理</button><div id="msg" role="status" style="font:14px sans-serif;padding:6px"></div><textarea id="fallback" readonly style="display:none;width:100%;height:120px"></textarea><script>const payload='''+encoded+''';document.getElementById('copy').onclick=async()=>{try{await navigator.clipboard.writeText(payload);document.getElementById('msg').textContent='已复制PM01交接卡';}catch(e){const t=document.getElementById('fallback');t.style.display='block';t.value=payload;t.select();try{if(!document.execCommand('copy'))throw Error();document.getElementById('msg').textContent='已复制PM01交接卡';}catch(e){document.getElementById('msg').textContent='浏览器限制复制，请复制下方短交接卡';}}};</script>''',height=225)
+    with st.expander('交接卡预览（短文本，可直接发送）'):
+        st.text(handoff)
+    with st.expander('完整技术输出与来源审计（无需粘贴到聊天）'):
         st.caption('SNAPSHOT_ID='+s['bundle_id'])
         st.caption('SOURCE_TIMESTAMP='+s['source_timestamp'])
         st.caption('冻结采集批次，不承诺交易所原子同秒快照；保留逐股源时间。')
