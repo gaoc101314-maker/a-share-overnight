@@ -648,7 +648,7 @@ def render():
     text=export_text(s)
     handoff=handoff_text(s)
     st.caption(f'交接卡{len(handoff)}字；复制的是短卡，完整数据作为JSON附件发送。')
-    st.download_button('下载完整数据附件｜发给高级助理',json.dumps(s,ensure_ascii=False,indent=2),file_name='pm01-'+s['bundle_id']+'.json',mime='application/json')
+    st.download_button('下载完整数据附件｜发给高级助理',json.dumps(s,ensure_ascii=False,indent=2),file_name='pm01-'+s['bundle_id']+'.json',mime='application/json',on_click='ignore')
     # Entire payload stays in the browser iframe; no server or third-party clipboard service.
     encoded=json.dumps(handoff,ensure_ascii=True).replace('<','\\u003c')
     components.html('''<button id="copy" style="width:100%;padding:14px;border-radius:10px;background:#172b45;color:white;border:0;font-size:16px">复制给高级助理</button><div id="msg" role="status" style="font:14px sans-serif;padding:6px"></div><textarea id="fallback" readonly style="display:none;width:100%;height:120px"></textarea><script>const payload='''+encoded+''';document.getElementById('copy').onclick=async()=>{try{await navigator.clipboard.writeText(payload);document.getElementById('msg').textContent='已复制PM01交接卡';}catch(e){const t=document.getElementById('fallback');t.style.display='block';t.value=payload;t.select();try{if(!document.execCommand('copy'))throw Error();document.getElementById('msg').textContent='已复制PM01交接卡';}catch(e){document.getElementById('msg').textContent='浏览器限制复制，请复制下方短交接卡';}}};</script>''',height=225)
@@ -660,5 +660,5 @@ def render():
         st.caption('冻结采集批次，不承诺交易所原子同秒快照；保留逐股源时间。')
         st.json(s['trace'],expanded=False)
         st.code(text,language=None)
-        st.download_button('下载本次冻结JSON',json.dumps(s,ensure_ascii=False,indent=2),file_name='pm01-'+s['bundle_id']+'.json',mime='application/json')
+        st.download_button('下载本次冻结JSON',json.dumps(s,ensure_ascii=False,indent=2),file_name='pm01-'+s['bundle_id']+'.json',mime='application/json',on_click='ignore')
         st.caption('2026交易日历来源：'+SSE_CALENDAR+'；其他年份未核验时仅研究且不认证。')
