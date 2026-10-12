@@ -505,6 +505,54 @@ def export_text(s):
     return '\n'.join(lines)
 
 
+ORIGIN='https://a-share-reality-pm03.gaoc101314.chatgpt.site'
+
+def archive_snapshot(snapshot, token, session=None):
+    if not token: raise ValueError('HANDOFF_AUTH_NOT_CONFIGURED')
+    raw=json.dumps(snapshot,ensure_ascii=False,indent=2).encode('utf-8')
+    sha=hashlib.sha256(raw).hexdigest()
+    headers={'OAI-Sites-Authorization':'Bearer '+token}
+    client=session or requests.Session()
+    own=session is None
+    if own: client.trust_env=False
+    try:
+        reply=client.post(ORIGIN+'/handoff/pm01',headers=headers,json={'snapshot_id':snapshot['bundle_id'],'raw_sha256':sha,'raw_json':raw.decode('utf-8')},timeout=30,allow_redirects=False)
+        if reply.status_code!=200: raise ValueError('HANDOFF_SAVE_HTTP_'+str(reply.status_code))
+        receipt=reply.json()
+        if receipt.get('handoff_id')!='pm01-'+sha or receipt.get('snapshot_id')!=snapshot['bundle_id'] or receipt.get('writer_readback')!='VERIFIED':
+            raise ValueError('HANDOFF_RECEIPT_MISMATCH')
+        response=client.get(ORIGIN+'/handoff/pm01/raw',params={'handoff_id':'pm01-'+sha},headers=headers,timeout=30,allow_redirects=False)
+        if response.status_code!=200: raise ValueError('HANDOFF_READBACK_HTTP_'+str(response.status_code))
+        if hashlib.sha256(response.content).hexdigest()!=sha or response.content!=raw:
+            raise ValueError('HANDOFF_READBACK_MISMATCH')
+        return {**receipt,'independent_readback':'VERIFIED','reader_tool':'get_pm01_handoff','site_origin':ORIGIN}
+    except requests.RequestException:
+        raise ValueError('HANDOFF_NETWORK_UNCONFIRMED') from None
+    finally:
+        if own: client.close()
+
+def ensure_handoff(snapshot, st):
+    if not snapshot.get('d0'): return {'status':'WAITING_SNAPSHOT'}
+    sha=hashlib.sha256(json.dumps(snapshot,ensure_ascii=False,indent=2).encode('utf-8')).hexdigest()
+    cached=st.session_state.get('pm01_handoff_receipts',{})
+    if sha in cached: return cached[sha]
+    try:
+        token=st.secrets.get('PM01_HANDOFF_SITE_TOKEN','')
+        receipt=archive_snapshot(snapshot,token)
+    except (ValueError,FileNotFoundError) as error:
+        return {'status':'HANDOFF_NOT_COMPLETE','reason':str(error)[:80] if isinstance(error,ValueError) else 'HANDOFF_AUTH_NOT_CONFIGURED'}
+    cached[sha]=receipt
+    st.session_state['pm01_handoff_receipts']=dict(list(cached.items())[-16:])
+    return receipt
+
+def reference_card(card, receipt):
+    if receipt.get('independent_readback')!='VERIFIED':
+        return card+'\n完整原件交接：尚未完成，不能要求高级助理仅凭本卡放行。'
+    card=card.replace('PM01 数据交接卡（完整数据请附JSON文件）','PM01 数据交接卡（同批原件已受信保存）')
+    card=card.replace('请高级助理读取同批JSON附件并核对日期/批次。附件缺失时先取得附件，不把本卡当完整五源产品。','高级助理直接按下列引用读取云端同批原件并复算SHA；无需老板下载转发，不把本卡当完整五源产品。')
+    return card+'\nHANDOFF_ID='+receipt['handoff_id']+'\nRAW_SHA256='+receipt['raw_sha256']+'\n受信器官：'+ORIGIN+'\n读入口：get_pm01_handoff；原件路径：'+receipt['raw_path']+'\n原件保存及独立回读：VERIFIED（不授予正式生产资格）。'
+
+
 def handoff_text(s):
     """Bounded chat handoff; full canonical input remains a separate attachment."""
     def short(value, limit=140):
@@ -644,9 +692,14 @@ def render():
             st.write(('SECOND_BOARD_POOL_STATUS=' if key=='second' else 'LEADER_POOL_STATUS=')+s[key+'_status'])
             display_rows(s[key])
     text=export_text(s)
-    handoff=handoff_text(s)
-    st.caption(f'交接卡{len(handoff)}字；复制的是短卡，完整数据作为JSON附件发送。')
-    st.download_button('下载完整数据附件｜发给高级助理',json.dumps(s,ensure_ascii=False,indent=2),file_name='pm01-'+s['bundle_id']+'.json',mime='application/json',on_click='ignore')
+    receipt=ensure_handoff(s,st)
+    handoff=reference_card(handoff_text(s),receipt)
+    if receipt.get('independent_readback')=='VERIFIED':
+        st.success('同批完整原件已保存并独立回读；高级助理可直接读取，无需下载转发。')
+    else:
+        st.warning('自动原件交接尚未完成：'+receipt.get('reason',receipt.get('status','UNKNOWN')))
+    st.caption(f'交接卡{len(handoff)}字；复制的是短卡；原件自动交接状态以回读结果为准。')
+    st.download_button('下载完整原件（备用）',json.dumps(s,ensure_ascii=False,indent=2),file_name='pm01-'+s['bundle_id']+'.json',mime='application/json',on_click='ignore')
     # Entire payload stays in the browser iframe; no server or third-party clipboard service.
     encoded=json.dumps(handoff,ensure_ascii=True).replace('<','\\u003c')
     components.html('''<button id="copy" style="width:100%;padding:14px;border-radius:10px;background:#172b45;color:white;border:0;font-size:16px">复制给高级助理</button><div id="msg" role="status" style="font:14px sans-serif;padding:6px"></div><textarea id="fallback" readonly style="display:none;width:100%;height:120px"></textarea><script>const payload='''+encoded+''';document.getElementById('copy').onclick=async()=>{try{await navigator.clipboard.writeText(payload);document.getElementById('msg').textContent='已复制PM01交接卡';}catch(e){const t=document.getElementById('fallback');t.style.display='block';t.value=payload;t.select();try{if(!document.execCommand('copy'))throw Error();document.getElementById('msg').textContent='已复制PM01交接卡';}catch(e){document.getElementById('msg').textContent='浏览器限制复制，请复制下方短交接卡';}}};</script>''',height=225)
@@ -666,3 +719,5 @@ def render():
         render_blind(st,s,progress if refresh_clicked else None)
     else:
         st.info('已载入研究池摘要。点击刷新取得最新行情与完整路径；首次打开不自动下载旧日期分时。研究摘要不代表当天Production可用。')
+
+
