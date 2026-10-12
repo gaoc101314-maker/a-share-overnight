@@ -2,7 +2,7 @@
 import json
 import math
 from datetime import datetime
-from pm01 import get, symbol, fanout, eligible, now_cn, CN
+from pm01 import get, symbol, fanout, eligible, now_cn, CN, handoff_text
 
 UNKNOWN = 'UNKNOWN'
 FIELDS = ['股票','代码','SOURCE_3D_RANK','SOURCE_5D_RANK','SOURCE_10D_RANK',
@@ -241,8 +241,12 @@ def render(st,s,progress=None):
         with st.expander('完整Reality · '+p['rows'][index]['股票'],expanded=True):
             st.json(p['rows'][index])
     text=export_text(p)
-    encoded=json.dumps(text,ensure_ascii=True).replace('<','\\u003c')
-    components.html('''<button id="copy" style="width:100%;padding:14px;border-radius:10px;background:#172b45;color:white;border:0;font-size:16px">复制盲生成Reality</button><div id="msg" role="status"></div><textarea id="fallback" readonly style="display:none;width:100%;height:120px"></textarea><script>const payload='''+encoded+''';document.getElementById('copy').onclick=async()=>{try{await navigator.clipboard.writeText(payload);document.getElementById('msg').textContent='已复制完整PM03_BLIND_UNIVERSE';}catch(e){const t=document.getElementById('fallback');t.style.display='block';t.value=payload;t.select();document.getElementById('msg').textContent=document.execCommand('copy')?'已复制完整PM03_BLIND_UNIVERSE':'请长按文本全选复制';}};</script>''',height=200)
-    st.download_button('下载盲生成Reality文本',text.encode('utf-8-sig'),file_name='PM03_BLIND_UNIVERSE_'+p['d0']+'.txt',mime='text/plain')
-    with st.expander('盲生成复制全文与数据缺口'):
+    handoff=handoff_text(s)+'\nPM03去重宇宙：'+str(p['unique_count'])+'只；五源='+str(p['five_source_status'])[:12]+'；路径='+str(p['path_status'])[:12]+'；历史缺口='+str(p['history_gap'])+'；UNKNOWN字段='+str(p['unknown_count'])+'。\n请同时附下方PM03完整数据文件；短卡不是完整考卷，不能仅凭本卡生成五候选。'
+    st.caption(f'交接卡{len(handoff)}字；完整逐股数据作为附件发送，无需粘贴长日志。')
+    encoded=json.dumps(handoff,ensure_ascii=True).replace('<','\\u003c')
+    components.html('''<button id="copy" style="width:100%;padding:14px;border-radius:10px;background:#172b45;color:white;border:0;font-size:16px">复制盲生成Reality</button><div id="msg" role="status"></div><textarea id="fallback" readonly style="display:none;width:100%;height:120px"></textarea><script>const payload='''+encoded+''';document.getElementById('copy').onclick=async()=>{try{await navigator.clipboard.writeText(payload);document.getElementById('msg').textContent='已复制PM03交接卡';}catch(e){const t=document.getElementById('fallback');t.style.display='block';t.value=payload;t.select();document.getElementById('msg').textContent=document.execCommand('copy')?'已复制PM03交接卡':'请复制下方短交接卡';}};</script>''',height=200)
+    st.download_button('下载盲生成Reality文本',text.encode('utf-8-sig'),file_name='PM03_BLIND_UNIVERSE_'+p['d0']+'.txt',mime='text/plain',on_click='ignore')
+    with st.expander('PM03短交接卡预览'):
+        st.text(handoff)
+    with st.expander('完整附件内容与数据缺口（无需粘贴到聊天）'):
         st.code(text,language=None)
