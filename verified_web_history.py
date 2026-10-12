@@ -59,12 +59,17 @@ def repair(snapshot):
     same_day = clock.date().isoformat() == s['d0']
     mode = 'PRODUCTION'
     asof = clock.isoformat()
-    if not same_day:
-        # Historical close ranking is explicitly research-only; capture time stays intact.
-        timestamps = [datetime.fromisoformat(q['source_timestamp']) for q in s['rows'].values()]
-        if any(t.date().isoformat() != s['d0'] or t.time().replace(tzinfo=None) < time(15) for t in timestamps):
+    after_close = same_day and clock.time().replace(tzinfo=None) >= time(15)
+    if not same_day or after_close:
+        # Same-day after-close and historical close ranking are research-only.
+        try:
+            timestamps = [datetime.fromisoformat(q['source_timestamp']) for q in s['rows'].values()]
+        except (KeyError, TypeError, ValueError):
             return snapshot
-        asof = max(timestamps).isoformat()
+        if not timestamps or any(t.tzinfo is None or t.date().isoformat() != s['d0']
+                or t.time().replace(tzinfo=None) < time(15) or t > clock for t in timestamps):
+            return snapshot
+        asof = clock.isoformat() if same_day else max(timestamps).isoformat()
         mode = 'CLOSE_MAINTENANCE'
         for code, q in s['rows'].items():
             q['close_evidence'] = {'kind': 'PROVIDER_REPORTED_CLOSE', 'code': code,
