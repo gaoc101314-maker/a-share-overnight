@@ -550,6 +550,9 @@ def reference_card(card, receipt):
         return card+'\n完整原件交接：尚未完成，不能要求高级助理仅凭本卡放行。'
     card=card.replace('PM01 数据交接卡（完整数据请附JSON文件）','PM01 数据交接卡（同批原件已受信保存）')
     card=card.replace('请高级助理读取同批JSON附件并核对日期/批次。附件缺失时先取得附件，不把本卡当完整五源产品。','高级助理直接按下列引用读取云端同批原件并复算SHA；无需老板下载转发，不把本卡当完整五源产品。')
+    card=card.replace('完整清单在同批JSON附件，以下仅为示例。','完整明细已随云端原件保存。')
+    if 'PM01_READY=YES；研究模式=YES' in card and '缺失项共0项；错误共0项。' in card:
+        card=card.replace('结果：尚不能进入正式生产；请先处理下列缺口。','结果：本批数据认证齐备；收盘后研究产品，不能补签正式生产。')
     return card+'\nHANDOFF_ID='+receipt['handoff_id']+'\nRAW_SHA256='+receipt['raw_sha256']+'\n受信器官：'+ORIGIN+'\n读入口：get_pm01_handoff；原件路径：'+receipt['raw_path']+'\n原件保存及独立回读：VERIFIED（不授予正式生产资格）。'
 
 
