@@ -132,7 +132,7 @@ def refresh_certified(mode='PRODUCTION'):
         return original_history(code, d0, required)
     pm01.history = history
     try:
-        snapshot = pm01.refresh()
+        snapshot = pm01.refresh(certified=True)
     finally:
         pm01.history = original_history
     if snapshot.get('d0') != today:
