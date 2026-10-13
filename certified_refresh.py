@@ -5,6 +5,8 @@ No publication, company-pool replacement or quote-time rewriting here.
 import copy
 import hashlib
 import json
+import gzip
+import base64
 from datetime import timedelta
 import pm01
 from pm03_quote_diagnostic import adapt_refresh, rank_evidence_provider
@@ -165,6 +167,16 @@ def refresh_certified(mode='PRODUCTION'):
     evidence = rank_evidence_provider(snapshot, pm01.get, actual_context, records,
         mode=mode, asof=asof)
     result = adapt_refresh(snapshot, evidence, asof, mode=mode)
+    # Keep every acquisition event losslessly, within the existing handoff limit.
+    adapter=result['trace']['PER_PERIOD_ADAPTER']
+    events=adapter['acquisition_diagnostics']
+    raw=json.dumps(events,ensure_ascii=False,separators=(',',':')).encode('utf8')
+    if len(raw)>3*1024*1024:
+        adapter['acquisition_diagnostics']={'encoding':'gzip+base64-json',
+            'event_count':len(events),'uncompressed_bytes':len(raw),
+            'uncompressed_sha256':hashlib.sha256(raw).hexdigest(),
+            'data':base64.b64encode(gzip.compress(raw,mtime=0)).decode('ascii'),
+            'readback_instruction':'Decode base64, decompress gzip, verify uncompressed_sha256 and event_count; all original acquisition events retained'}
     # Original freeze/export contract retains account eligibility fields.
     for ranked in result['top'].values():
         for row in ranked:
