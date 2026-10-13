@@ -343,7 +343,7 @@ def blank_snapshot(error='NOT_REFRESHED'):
     return dict(snapshot_id=uuid.uuid4().hex,d0='',snapshot_time=now_cn().isoformat(),data_source='NONE',source_timestamp='UNKNOWN',market_count=0,rows={},top={str(n):[] for n in PERIODS},pool_status={str(n):'FAIL' for n in PERIODS},errors=[error],same_snapshot='FAIL',fresh=False,trace={})
 
 
-def refresh(progress=None, stage=None):
+def refresh(progress=None, stage=None, certified=False):
     global UNIVERSE_CACHE
     s=blank_snapshot()
     def notify(done,total,elapsed):
@@ -438,7 +438,7 @@ def refresh(progress=None, stage=None):
         s['fresh']=bool(quote_times) and all(t.date()==now_cn().date() and -30<=(now_cn()-t).total_seconds()<=300 for t in quote_times)
         s['same_snapshot']='PASS' if not s['errors'] else 'FAIL'
         s['history_complete_at']=now_cn().isoformat()
-        if s.get('history_failures'):
+        if s.get('history_failures') and not certified:
             from verified_web_history import repair
             s=repair(s)
     except Exception as e:
@@ -513,7 +513,7 @@ ORIGIN='https://a-share-reality-pm03.gaoc101314.chatgpt.site'
 
 def archive_snapshot(snapshot, token, session=None):
     if not token: raise ValueError('HANDOFF_AUTH_NOT_CONFIGURED')
-    raw=json.dumps(snapshot,ensure_ascii=False,indent=2).encode('utf-8')
+    raw=json.dumps(snapshot,ensure_ascii=False,separators=(',',':')).encode('utf-8')
     sha=hashlib.sha256(raw).hexdigest()
     headers={'OAI-Sites-Authorization':'Bearer '+token}
     client=session or requests.Session()
@@ -537,7 +537,7 @@ def archive_snapshot(snapshot, token, session=None):
 
 def ensure_handoff(snapshot, st):
     if not snapshot.get('d0'): return {'status':'WAITING_SNAPSHOT'}
-    sha=hashlib.sha256(json.dumps(snapshot,ensure_ascii=False,indent=2).encode('utf-8')).hexdigest()
+    sha=hashlib.sha256(json.dumps(snapshot,ensure_ascii=False,separators=(',',':')).encode('utf-8')).hexdigest()
     cached=st.session_state.get('pm01_handoff_receipts',{})
     if sha in cached: return cached[sha]
     try:
