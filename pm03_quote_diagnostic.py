@@ -10,6 +10,7 @@ import math
 import re
 import copy
 import base64
+from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlencode
 CN=dt.timezone(dt.timedelta(hours=8))
 
@@ -175,9 +176,9 @@ def rank_evidence_provider(snapshot, get, context, cached_history=(), mode='PROD
             listing_evidence=context.get('listing_evidence'),
             suspension_evidence=context.get('suspension_evidence'),mode=mode)
         return all(not p['missing'] for p in result['periods'].values())
-    for c in codes:
-        if covered(c):continue
-        recipes=[('https://web.ifzq.gtimg.cn/appstock/app/fqkline/get','TENCENT_RAW_DAILY',{'param':symbol(c)+',day,,,80,'}),
+    def acquire(c):
+        if covered(c):return
+        recipes=[('https://web.ifzq.gtimg.cn/appstock/app/newfqkline/get','TENCENT_RAW_DAILY',{'param':symbol(c)+',day,,,80,'}),
           ('https://web.ifzq.gtimg.cn/appstock/app/kline/kline','TENCENT_RAW_KLINE_BACKUP',{'param':symbol(c)+',day,,,80'}),
           ('https://proxy.finance.qq.com/ifzqgtimg/appstock/app/fqkline/get','TENCENT_PROXY_RAW_BACKUP',{'param':symbol(c)+',day,,,80,'}),
           ('https://quotes.sina.cn/cn/api/jsonp_v2.php/var%20pm01=/CN_MarketDataService.getKLineData','SINA_RAW_DAILY_BACKUP',{'symbol':symbol(c),'scale':240,'ma':'no','datalen':80})]
@@ -212,6 +213,9 @@ def rank_evidence_provider(snapshot, get, context, cached_history=(), mode='PROD
             finally:
                 event['finished_at']=dt.datetime.now(CN).isoformat();events.append(event)
             if covered(c):break
+    with ThreadPoolExecutor(max_workers=16) as pool:
+        list(pool.map(acquire,codes))
+    events.sort(key=lambda event:(event['code'],event['started_at']))
     return {**copy.deepcopy(context),'daily_prices':daily,'acquisition_diagnostics':events}
 
 def refresh_with_evidence(pm01, context, cached_history=(), mode='PRODUCTION'):

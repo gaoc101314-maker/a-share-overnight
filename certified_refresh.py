@@ -39,6 +39,10 @@ def context(seed, codes, dates, bases):
         listings['920157']={'code':'920157','listing_date':'2026-10-09',
             'source':'https://vip.stock.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?id=12628834&stockid=920157',
             'evidence':'Issuer listing announcement independently read 2026-10-09; first Beijing exchange trading day 2026-10-09'}
+    if '301660' in codes:
+        listings['301660']={'code':'301660','listing_date':'2026-10-13',
+            'source':'https://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?id=12636489&stockid=301660',
+            'evidence':'Issuer listing announcement independently read 2026-10-13; first trading day 2026-10-13; no prior-day closes invented'}
     suspensions = {}
     # Open-ended halts are proven only through the actual verification date.
     halts={**metadata['halts'],
@@ -75,6 +79,26 @@ def context(seed, codes, dates, bases):
             suspensions.setdefault(code,{})[base]={'code':code,'requested_base_date':base,
                 'source':url,'evidence':'Issuer announcement independently read 2026-10-09 proves only Sep30 halt; actual prior close date retained',
                 'sessions':[{'date':base,'status':'SUSPENDED'}]}
+    # Exact historical sessions confirmed in issuer announcements. These are
+    # bounded facts, never an open-ended assumption about future suspension.
+    oct08_halts={
+        '000582':(['2026-10-08'],'https://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?id=12636392&stockid=000582'),
+        '000668':(['2026-10-08'],'https://static.cninfo.com.cn/finalpage/2026-10-08/1225591961.PDF'),
+        '002388':(['2026-10-08'],'https://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?id=12631200&stockid=002388'),
+        '300773':(['2026-10-08'],'https://file.finance.sina.com.cn/211.154.219.97:9494/MRGG/CNSESZ_STOCK/2026/2026-10/2026-10-01/12630709.PDF'),
+        '002667':(['2026-09-30','2026-10-08'],'https://vip.stock.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?id=12636388&stockid=002667'),
+        '002813':(['2026-09-30','2026-10-08'],'https://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?id=12633328&stockid=002813'),
+        '603183':(['2026-09-30','2026-10-08'],'https://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?id=12633365&stockid=603183')}
+    for code,(confirmed,url) in oct08_halts.items():
+        if code not in codes:continue
+        bars=seed['daily'].get(code,{}).get('closes',{})
+        for base in bases.values():
+            prior=sorted(d for d in bars if d<base)
+            needed=[d for d in dates if prior and prior[-1]<d<=base]
+            if needed and all(d in confirmed for d in needed):
+                suspensions.setdefault(code,{})[base]={'code':code,'requested_base_date':base,
+                    'source':url,'evidence':'Issuer historical suspension session independently verified 2026-10-13; actual prior close date retained',
+                    'sessions':[{'date':d,'status':'SUSPENDED'} for d in needed]}
     return {'universe_codes': sorted(codes), 'trading_dates': dates,
         'listing_evidence': listings, 'suspension_evidence': suspensions}
 
@@ -117,11 +141,20 @@ def refresh_certified(mode='PRODUCTION'):
         raise ValueError('TODAY_QUOTE_REQUIRED:'+stage+':'+code)
     with pm01.CACHE_LOCK:
         universe = copy.deepcopy(pm01.UNIVERSE_CACHE)
+        acquired_history = copy.deepcopy(pm01.HISTORY_MEMORY)
     if not universe:
         raise ValueError('INDEPENDENT_UNIVERSE_REQUIRED')
     codes = {r['code'] for r in universe['rows']}
     actual_context = context(seed, codes, dates, snapshot['base_dates'])
     records = [r for r in records if r['code'] in codes]
+    # Reuse only exact-date acquisitions with raw response provenance.
+    by_code = {r['code']:r for r in records}
+    for code in codes:
+        key = hashlib.sha256((code+today+','.join(snapshot['base_dates'].values())).encode()).hexdigest()
+        acquired = acquired_history.get(key)
+        if acquired and acquired.get('adjustment')=='UNADJUSTED' and acquired.get('evidence'):
+            by_code[code] = {**acquired,'code':code}
+    records = list(by_code.values())
     if mode == 'CLOSE_MAINTENANCE':
         for code, q in snapshot['rows'].items():
             proof = hashlib.sha256(json.dumps(q, sort_keys=True).encode()).hexdigest()

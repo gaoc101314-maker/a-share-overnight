@@ -248,7 +248,7 @@ def history(code, d0, bases):
         pass
     closes=None
     source=None
-    endpoints=[('https://web.ifzq.gtimg.cn/appstock/app/fqkline/get','TENCENT_RAW_DAILY',symbol(code)+',day,,,80,'),('https://web.ifzq.gtimg.cn/appstock/app/kline/kline','TENCENT_RAW_KLINE_BACKUP',symbol(code)+',day,,,80'),('https://proxy.finance.qq.com/ifzqgtimg/appstock/app/fqkline/get','TENCENT_PROXY_RAW_BACKUP',symbol(code)+',day,,,80,')]
+    endpoints=[('https://web.ifzq.gtimg.cn/appstock/app/newfqkline/get','TENCENT_RAW_DAILY',symbol(code)+',day,,,80,'),('https://web.ifzq.gtimg.cn/appstock/app/kline/kline','TENCENT_RAW_KLINE_BACKUP',symbol(code)+',day,,,80'),('https://proxy.finance.qq.com/ifzqgtimg/appstock/app/fqkline/get','TENCENT_PROXY_RAW_BACKUP',symbol(code)+',day,,,80,')]
     rejected=getattr(LOCAL,'history_rejected',{})
     fallback=False
     for i,(endpoint,label,param) in enumerate(endpoints):
@@ -256,11 +256,13 @@ def history(code, d0, bases):
             fallback=True
             continue
         try:
-            d=get(endpoint,{'param':param}).json()['data'][symbol(code)]
+            response=get(endpoint,{'param':param})
+            d=response.json()['data'][symbol(code)]
             candidate={a[0]:float(a[2]) for a in d.get('day',[])}
             if not all(day in candidate for day in bases):
                 raise ValueError('EXACT_BASE_DATE_MISSING')
             closes,source=candidate,label
+            evidence=json.dumps({'url':endpoint,'params':{'param':param},'response_sha256':hashlib.sha256(response.content).hexdigest()},sort_keys=True)
             fallback=i>0
             break
         except requests.RequestException:
@@ -290,6 +292,8 @@ def history(code, d0, bases):
     if not all(day in valid for day in bases):
         raise ValueError('EXACT_BASE_DATE_MISSING')
     result=dict(closes=valid,source=source,primary_source='FAIL' if fallback else 'PASS',fetched_at=now_cn().isoformat())
+    if source.startswith('TENCENT_'):
+        result.update(adjustment='UNADJUSTED',evidence=evidence)
     with CACHE_LOCK:
         if len(HISTORY_MEMORY)>=6000:
             HISTORY_MEMORY.pop(next(iter(HISTORY_MEMORY)))
@@ -598,7 +602,7 @@ def render():
     st.markdown('<style>h1 {font-size:28px !important;line-height:1.2 !important} .block-container {padding-top:2.5rem}</style>',unsafe_allow_html=True)
     st.title('A股 Production Reality')
     st.caption('PM01 五源输入')
-    st.caption('性能版本：2026-10-11 · 精确历史缓存复用 · 首屏不自动补取旧分时')
+    st.caption('性能版本：2026-10-13 · 原网页认证链修复 · 精确历史证据复用')
     st.caption('只供给市场Reality；自动池的正式资格与数据缺口单独显示，公司粘贴池保留为对照入口。')
     from auto_pools import load_latest,render_status,connect
     auto_version=load_latest()
@@ -639,7 +643,9 @@ def render():
             bar=st.progress(0)
             def progress(done,total,elapsed):
                 bar.progress(min(done/max(total,1),1),text=f'{stage_name[0]} · {done}/{total} · {elapsed:.0f} 秒')
-            s=refresh(progress,show_stage)
+            from certified_refresh import refresh_certified
+            show_stage('核验全市场、精确历史日期及上市停牌证据；保留日期与新鲜度保护')
+            s=refresh_certified(mode='CLOSE_MAINTENANCE' if now_cn().time().replace(tzinfo=None)>=walltime(15) else 'PRODUCTION')
             st.session_state['pm01_snapshot']=s
             status.update(label='数据已取得' if not s['errors'] else '数据不完整；请查看缺失信息',state='complete' if not s['errors'] else 'error',expanded=False)
     snapshot=st.session_state.get('pm01_snapshot',blank_snapshot())
