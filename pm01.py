@@ -556,7 +556,7 @@ def reference_card(card, receipt):
     card=card.replace('请高级助理读取同批JSON附件并核对日期/批次。附件缺失时先取得附件，不把本卡当完整五源产品。','高级助理直接按下列引用读取云端同批原件并复算SHA；无需老板下载转发，不把本卡当完整五源产品。')
     card=card.replace('完整清单在同批JSON附件，以下仅为示例。','完整明细已随云端原件保存。')
     if 'PM01_READY=YES；研究模式=YES' in card and '缺失项共0项；错误共0项。' in card:
-        card=card.replace('结果：尚不能进入正式生产；请先处理下列缺口。','结果：本批数据认证齐备；收盘后研究产品，不能补签正式生产。')
+        card=card.replace('结果：尚不能进入正式生产；请先处理下列缺口。','结果：本批数据认证齐备；当前仅为数据原件，正式生产资格按时段独立验收。')
     return card+'\nHANDOFF_ID='+receipt['handoff_id']+'\nRAW_SHA256='+receipt['raw_sha256']+'\n受信器官：'+ORIGIN+'\n读入口：get_pm01_handoff；原件路径：'+receipt['raw_path']+'\n原件保存及独立回读：VERIFIED（不授予正式生产资格）。'
 
 
@@ -602,7 +602,7 @@ def render():
     st.markdown('<style>h1 {font-size:28px !important;line-height:1.2 !important} .block-container {padding-top:2.5rem}</style>',unsafe_allow_html=True)
     st.title('A股 Production Reality')
     st.caption('PM01 五源输入')
-    st.caption('性能版本：2026-10-13 · 原网页认证链修复 · 精确历史证据复用')
+    st.caption('性能版本：2026-10-14 · 当天历史基准修复 · 刷新进度已接通')
     st.caption('只供给市场Reality；自动池的正式资格与数据缺口单独显示，公司粘贴池保留为对照入口。')
     from auto_pools import load_latest,render_status,connect
     auto_version=load_latest()
