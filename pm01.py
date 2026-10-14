@@ -645,7 +645,7 @@ def render():
                 bar.progress(min(done/max(total,1),1),text=f'{stage_name[0]} · {done}/{total} · {elapsed:.0f} 秒')
             from certified_refresh import refresh_certified
             show_stage('核验全市场、精确历史日期及上市停牌证据；保留日期与新鲜度保护')
-            s=refresh_certified(mode='CLOSE_MAINTENANCE' if now_cn().time().replace(tzinfo=None)>=walltime(15) else 'PRODUCTION')
+            s=refresh_certified(mode='CLOSE_MAINTENANCE' if now_cn().time().replace(tzinfo=None)>=walltime(15) else 'PRODUCTION',progress=progress,stage=show_stage)
             st.session_state['pm01_snapshot']=s
             status.update(label='数据已取得' if not s['errors'] else '数据不完整；请查看缺失信息',state='complete' if not s['errors'] else 'error',expanded=False)
     snapshot=st.session_state.get('pm01_snapshot',blank_snapshot())

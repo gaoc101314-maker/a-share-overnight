@@ -101,11 +101,25 @@ def context(seed, codes, dates, bases):
                 suspensions.setdefault(code,{})[base]={'code':code,'requested_base_date':base,
                     'source':url,'evidence':'Issuer historical suspension session independently verified 2026-10-13; actual prior close date retained',
                     'sessions':[{'date':d,'status':'SUSPENDED'} for d in needed]}
+    # Newly independently read historical sessions have an explicit end bound.
+    # Original open-ended seed halts remain bounded by their original date.
+    for code, fact in metadata.get('verified_historical_suspensions', {}).items():
+        if code not in codes:
+            continue
+        bars = seed['daily'].get(code, {}).get('closes', {})
+        for base in bases.values():
+            prior = sorted(d for d in bars if d < base)
+            needed = [d for d in dates if prior and prior[-1] < d <= base]
+            if needed and all(fact['start'] <= d <= fact['through'] for d in needed):
+                suspensions.setdefault(code, {})[base] = {'code': code,
+                    'requested_base_date': base, 'source': fact['source'],
+                    'evidence': fact['evidence'] + ' Corroboration: ' + fact['corroboration'],
+                    'sessions': [{'date': d, 'status': 'SUSPENDED'} for d in needed]}
     return {'universe_codes': sorted(codes), 'trading_dates': dates,
         'listing_evidence': listings, 'suspension_evidence': suspensions}
 
 
-def refresh_certified(mode='PRODUCTION'):
+def refresh_certified(mode='PRODUCTION', progress=None, stage=None):
     seed = load_seed()
     today = pm01.now_cn().date().isoformat()
     dates = calendar(today)
@@ -134,7 +148,7 @@ def refresh_certified(mode='PRODUCTION'):
         return original_history(code, d0, required)
     pm01.history = history
     try:
-        snapshot = pm01.refresh(certified=True)
+        snapshot = pm01.refresh(progress=progress, stage=stage, certified=True)
     finally:
         pm01.history = original_history
     if snapshot.get('d0') != today:
