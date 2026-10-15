@@ -691,7 +691,14 @@ def main():
         render()
         return
     if entry == "Production Reality｜PM01":
-        from pm01 import render
+        import importlib
+        import pm01
+        # Apply deployed module changes once, including in long-lived sessions.
+        module_sha = hashlib.sha256(Path(pm01.__file__).read_bytes()).hexdigest()
+        if getattr(pm01, '_loaded_source_sha', None) != module_sha:
+            importlib.reload(pm01)
+            pm01._loaded_source_sha = module_sha
+        render = pm01.render
         render()
         return
     st.title("A股隔夜策略 · 手机选股助手")
