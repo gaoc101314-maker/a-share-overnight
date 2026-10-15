@@ -643,7 +643,11 @@ def render():
             bar=st.progress(0)
             def progress(done,total,elapsed):
                 bar.progress(min(done/max(total,1),1),text=f'{stage_name[0]} · {done}/{total} · {elapsed:.0f} 秒')
-            from certified_refresh import refresh_certified
+            # Reload this stateless adapter so a deployed evidence update takes
+            # effect in an existing Streamlit process before a new collection.
+            import importlib
+            import certified_refresh
+            refresh_certified = importlib.reload(certified_refresh).refresh_certified
             show_stage('核验全市场、精确历史日期及上市停牌证据；保留日期与新鲜度保护')
             s=refresh_certified(mode='CLOSE_MAINTENANCE' if now_cn().time().replace(tzinfo=None)>=walltime(15) else 'PRODUCTION',progress=progress,stage=show_stage)
             st.session_state['pm01_snapshot']=s
