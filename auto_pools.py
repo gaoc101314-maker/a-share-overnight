@@ -414,7 +414,7 @@ def load_latest():
         if CLOUD_POOL_CACHE['until']>time.monotonic():
             return copy.deepcopy(CLOUD_POOL_CACHE['value'])
         try:
-            response=requests.get('https://a-share-reality-pm03.gaoc101314.chatgpt.site/handoff/pm01/auto-pool',headers={'Authorization':'Bearer '+token},timeout=(5,15),allow_redirects=False)
+            response=requests.get('https://a-share-reality-pm03.gaoc101314.chatgpt.site/handoff/pm01/auto-pool',headers={'OAI-Sites-Authorization':'Bearer '+token},timeout=(5,15),allow_redirects=False)
             response.raise_for_status()
             body=response.json();raw=body['version_json']
             if body['reader_readback']!='VERIFIED' or hashlib.sha256(raw.encode('utf8')).hexdigest()!=body['version_sha256']:
