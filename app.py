@@ -693,6 +693,11 @@ def main():
     if entry == "Production Reality｜PM01":
         import importlib
         import pm01
+        import auto_pools
+        pool_module_sha = hashlib.sha256(Path(auto_pools.__file__).read_bytes()).hexdigest()
+        if getattr(auto_pools, '_loaded_source_sha', None) != pool_module_sha:
+            importlib.reload(auto_pools)
+            auto_pools._loaded_source_sha = pool_module_sha
         # Apply deployed module changes once, including in long-lived sessions.
         module_sha = hashlib.sha256(Path(pm01.__file__).read_bytes()).hexdigest()
         if getattr(pm01, '_loaded_source_sha', None) != module_sha:
