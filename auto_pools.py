@@ -8,6 +8,8 @@ import hashlib
 import json
 import math
 import threading
+import time
+import requests
 from datetime import datetime,timedelta
 from pathlib import Path
 import pandas as pd
@@ -19,6 +21,7 @@ CACHE=ROOT/'.auto_pool_cache'
 WINDOW_DAYS=30
 RAW_LOCK=threading.Lock()
 RAW_CODE_LOCKS={}
+CLOUD_POOL_CACHE={'until':0,'value':None}
 
 
 def raw_closes(code,anchor):
@@ -330,6 +333,13 @@ def publish(version,folder=DATA):
 
 
 def report(v):
+    if v.get('cloud_readback')=='VERIFIED':
+        return '\n'.join(['FIVE_SOURCE_AUTO_V0.1','D0_DATE='+v['d0'],'VERSION_ID='+v['version_id'],
+            'MODE='+v['mode'],'SECOND_BOARD_POOL_COUNT='+str(len(v['second_board']['rows'])),
+            'SECOND_BOARD_POOL_STATUS='+v['second_board']['status'],
+            'LEADER_POOL_COUNT='+str(len(v['leader_pool']['rows'])),
+            'LEADER_POOL_STATUS='+v['leader_pool']['status'],
+            'FIVE_SOURCE_STATUS='+v['five_source_status'],'CLOUD_READBACK=VERIFIED'])
     return '\n'.join(['FIVE_SOURCE_AUTO_V0.1','D0_DATE='+v['d0'],
         *[n+'D_TOP50='+str(len(v['top']['top'][n]))+'/50' for n in ('3','5','10')],
         'SECOND_BOARD_POOL_COUNT='+str(len(v['second_board']['rows'])),
@@ -395,6 +405,29 @@ def connect(s,v):
 
 
 def load_latest():
+    try:
+        import streamlit as st
+        token=st.secrets.get('PM01_HANDOFF_SITE_TOKEN','')
+    except (ImportError,FileNotFoundError):
+        token=''
+    if token:
+        if CLOUD_POOL_CACHE['until']>time.monotonic():
+            return copy.deepcopy(CLOUD_POOL_CACHE['value'])
+        try:
+            response=requests.get('https://a-share-reality-pm03.gaoc101314.chatgpt.site/handoff/pm01/auto-pool',headers={'Authorization':'Bearer '+token},timeout=(5,15),allow_redirects=False)
+            response.raise_for_status()
+            body=response.json();raw=body['version_json']
+            if body['reader_readback']!='VERIFIED' or hashlib.sha256(raw.encode('utf8')).hexdigest()!=body['version_sha256']:
+                raise ValueError('CLOUD_VERSION_HASH_MISMATCH')
+            value=json.loads(raw)
+            if value['mode']!='RESEARCH' or value['research_mode']!='YES' or not value['version_id'].startswith('AUTO-'+value['date']+'-'):
+                raise ValueError('CLOUD_VERSION_IDENTITY_MISMATCH')
+            value={**value,'d0':value['date'],'cloud_readback':'VERIFIED'}
+            CLOUD_POOL_CACHE.update(until=time.monotonic()+30,value=value)
+            return copy.deepcopy(value)
+        except (requests.RequestException,ValueError,KeyError,TypeError):
+            CLOUD_POOL_CACHE.update(until=time.monotonic()+5,value=None)
+            return None
     for path in (DATA/'latest_candidate.json',ROOT/'latest_candidate.json'):
         try:
             value=json.loads(path.read_text(encoding='utf8'))
@@ -414,7 +447,7 @@ def render_status(st,v):
         st.code(report(v),language=None)
         if v['mode']!='FORMAL':
             st.warning('当前是自动生成的研究候选池；历史涨停覆盖、全市场历史或正式继承起点尚未通过，不是最新正式五源。')
-        st.caption('定时云端维护尚未启用：先完成历史回放验收，再进入下一交易日前向运行。')
+        st.caption('维护版本以原云端独立回读为准；当日版本未到达时不以旧版冒充当日。')
         st.write('二板总池')
         st.dataframe(pd.DataFrame(v['second_board']['rows']),hide_index=True,use_container_width=True)
         st.write('总龙头池')
