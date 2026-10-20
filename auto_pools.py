@@ -384,7 +384,7 @@ def connect(s,v):
                 **s['pool_metadata']['SECOND_BOARD_POOL' if key=='second' else 'LEADER_POOL']})
         s[key]=rows
         s[key+'_status']='PASS' if v[asset]['status']=='PASS' and not missing else 'PARTIAL'
-    s['trace']['AUTO_POOL']={'DATA_SOURCE':'FIVE_SOURCE_AUTO_V0.1','PRIMARY_SOURCE':'PASS' if v['five_source_status']=='PASS' else 'FAIL',
+    s['trace']['AUTO_POOL']={'VERSION_READBACK':v.get('cloud_readback','NOT_INDEPENDENTLY_READ'),'MAINTENANCE_STATUS':v['five_source_status'],'DATA_SOURCE':'FIVE_SOURCE_AUTO_V0.1','PRIMARY_SOURCE':'PASS' if v['five_source_status']=='PASS' else 'FAIL',
         'VERSION_ID':v['version_id'],'ASOF_DATE':v['d0'],'MODE':v['mode'],'FIVE_SOURCE_STATUS':v['five_source_status']}
     s['bundle_id']=s['bundle_id']+'-'+v['version_id'].split('-')[-1]
     for n,rows in s['top'].items():
@@ -398,7 +398,7 @@ def connect(s,v):
     s['missing']=[n+'D_TOP50' for n in ('3','5','10') if s['pool_status'][n]!='PASS']
     s['missing'] += [key.upper()+'_POOL:'+s[key+'_status'] for key in ('second','leader') if s[key+'_status']!='PASS']
     if s['same_snapshot']!='PASS':s['missing'].append('SAME_SNAPSHOT_STATUS')
-    if v['five_source_status']!='PASS':s['missing'].append('AUTO_POOL_VERSION_NOT_VERIFIED')
+    if v['five_source_status']!='PASS':s['missing'].append('AUTO_POOL_MAINTENANCE_NOT_VERIFIED')
     s['ready']='NO' if s['missing'] else 'YES'
     s['input_freeze']='FAIL' if s['missing'] else 'PASS'
     return s
