@@ -182,8 +182,9 @@ def refresh_certified(mode='PRODUCTION', progress=None, stage=None):
                 'date': today, 'price': q['price'], 'source_timestamp': q['source_timestamp'],
                 'source': q['quote_source'], 'evidence': 'Original live pm01 collection row sha256=' + proof}
     asof = pm01.now_cn().isoformat()
+    if stage: stage('4/4 独立核验排名证据；补缺预算90秒，超时保留真实缺口')
     evidence = rank_evidence_provider(snapshot, pm01.get, actual_context, records,
-        mode=mode, asof=asof)
+        mode=mode, asof=asof, budget=90, progress=progress)
     result = adapt_refresh(snapshot, evidence, asof, mode=mode)
     # Keep every acquisition event losslessly, within the existing handoff limit.
     adapter=result['trace']['PER_PERIOD_ADAPTER']
