@@ -408,8 +408,12 @@ def load_latest():
     try:
         import streamlit as st
         token=st.secrets.get('PM01_HANDOFF_SITE_TOKEN','')
-    except (ImportError,FileNotFoundError):
+        if not token:
+            return None
+    except ImportError:
         token=''
+    except FileNotFoundError:
+        return None
     if token:
         if CLOUD_POOL_CACHE['until']>time.monotonic():
             return copy.deepcopy(CLOUD_POOL_CACHE['value'])
