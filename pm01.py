@@ -89,7 +89,7 @@ def fanout(items, fn, progress=None, budget=240, workers=6):
 
 def eligible(code, name):
     reasons = []
-    if code.startswith(('300','688','92')):
+    if code.startswith(('300','301','688','92')):
         reasons.append('ACCOUNT_PREFIX')
     if 'ST' in name.upper():
         reasons.append('ST')
