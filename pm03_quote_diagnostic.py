@@ -10,7 +10,8 @@ import math
 import re
 import copy
 import base64
-from concurrent.futures import ThreadPoolExecutor
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.parse import urlencode
 CN=dt.timezone(dt.timedelta(hours=8))
 
@@ -136,7 +137,7 @@ export async function providerResponse(request,fetchImpl=fetch) {
 RAW_HISTORY_SOURCES={'TENCENT_RAW_DAILY','TENCENT_RAW_KLINE_BACKUP',
     'TENCENT_PROXY_RAW_BACKUP','SINA_RAW_DAILY_BACKUP','EASTMONEY_RAW_DAILY'}
 
-def rank_evidence_provider(snapshot, get, context, cached_history=(), mode='PRODUCTION', asof=None):
+def rank_evidence_provider(snapshot, get, context, cached_history=(), mode='PRODUCTION', asof=None, budget=90, progress=None):
     """Explicit injected acquisition, never called on import.
     context={universe_codes,trading_dates,listing_evidence?,suspension_evidence?}.
     cached_history iterable: {code,source,adjustment:'UNADJUSTED',closes,
@@ -147,6 +148,8 @@ def rank_evidence_provider(snapshot, get, context, cached_history=(), mode='PROD
     """
     d0=snapshot['d0']; codes=context['universe_codes']; daily={c:{} for c in codes}
     events=[]
+    started=time.monotonic()
+    deadline=started+budget
     def retain(code, closes, source, proof):
         for date,price in closes.items():
             try:valid_date=dt.date.fromisoformat(date).isoformat()==date and date<d0
@@ -177,12 +180,18 @@ def rank_evidence_provider(snapshot, get, context, cached_history=(), mode='PROD
             suspension_evidence=context.get('suspension_evidence'),mode=mode)
         return all(not p['missing'] for p in result['periods'].values())
     def acquire(c):
+        if time.monotonic()>=deadline:
+            events.append({'code':c,'status':'BUDGET_EXHAUSTED','network_requested':False})
+            return
         if covered(c):return
         recipes=[('https://web.ifzq.gtimg.cn/appstock/app/newfqkline/get','TENCENT_RAW_DAILY',{'param':symbol(c)+',day,,,80,'}),
           ('https://web.ifzq.gtimg.cn/appstock/app/kline/kline','TENCENT_RAW_KLINE_BACKUP',{'param':symbol(c)+',day,,,80'}),
           ('https://proxy.finance.qq.com/ifzqgtimg/appstock/app/fqkline/get','TENCENT_PROXY_RAW_BACKUP',{'param':symbol(c)+',day,,,80,'}),
           ('https://quotes.sina.cn/cn/api/jsonp_v2.php/var%20pm01=/CN_MarketDataService.getKLineData','SINA_RAW_DAILY_BACKUP',{'symbol':symbol(c),'scale':240,'ma':'no','datalen':80})]
         for url,source,params in recipes:
+            if time.monotonic()>=deadline:
+                events.append({'code':c,'status':'BUDGET_EXHAUSTED','network_requested':False})
+                break
             event={'code':c,'url':url,'params':copy.deepcopy(params),'source':source,
                    'started_at':dt.datetime.now(CN).isoformat()}
             try:
@@ -214,8 +223,15 @@ def rank_evidence_provider(snapshot, get, context, cached_history=(), mode='PROD
                 event['finished_at']=dt.datetime.now(CN).isoformat();events.append(event)
             if covered(c):break
     with ThreadPoolExecutor(max_workers=16) as pool:
-        list(pool.map(acquire,codes))
-    events.sort(key=lambda event:(event['code'],event['started_at']))
+        futures=[pool.submit(acquire,c) for c in codes]
+        last_update=0
+        for done,future in enumerate(as_completed(futures),1):
+            future.result()
+            elapsed=time.monotonic()-started
+            if progress and (elapsed-last_update>=0.5 or done==len(codes)):
+                progress(done,len(codes),elapsed)
+                last_update=elapsed
+    events.sort(key=lambda event:(event['code'],event.get('started_at','')))
     return {**copy.deepcopy(context),'daily_prices':daily,'acquisition_diagnostics':events}
 
 def refresh_with_evidence(pm01, context, cached_history=(), mode='PRODUCTION'):
