@@ -10,6 +10,7 @@ import base64
 from datetime import timedelta
 import pm01
 from pm03_quote_diagnostic import adapt_refresh, rank_evidence_provider
+from market_events import apply_facts
 from verified_history_seed import load_seed
 
 
@@ -186,9 +187,11 @@ def refresh_certified(mode='PRODUCTION', progress=None, stage=None):
     if stage: stage('4/4 独立核验排名证据；补缺预算90秒，超时保留真实缺口')
     evidence = rank_evidence_provider(snapshot, pm01.get, actual_context, records,
         mode=mode, asof=asof, budget=90, progress=progress)
+    evidence = apply_facts(evidence, snapshot['base_dates'], today, pm01.get, asof)
     result = adapt_refresh(snapshot, evidence, asof, mode=mode)
     # Keep every acquisition event losslessly, within the existing handoff limit.
     adapter=result['trace']['PER_PERIOD_ADAPTER']
+    adapter['event_diagnostics']=copy.deepcopy(evidence.get('event_diagnostics',[]))
     events=adapter['acquisition_diagnostics']
     raw=json.dumps(events,ensure_ascii=False,separators=(',',':')).encode('utf8')
     if len(raw)>3*1024*1024:
