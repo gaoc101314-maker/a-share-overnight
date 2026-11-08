@@ -7,6 +7,7 @@ import pm01
 from certified_refresh import calendar, context
 from verified_history_seed import load_seed
 from pm03_quote_diagnostic import rank_evidence_provider, adapt_refresh
+from market_events import apply_facts
 
 
 def prime(d0, bases, codes):
@@ -44,15 +45,16 @@ def repair(snapshot):
     records = [{**v, 'code': code, 'adjustment': 'UNADJUSTED',
                 'closes': {d: p for d, p in v['closes'].items() if d < s['d0']}}
                for code, v in seed['daily'].items() if code in codes]
-    # Successful original cache entries retain code identity through their exact key.
+    # Prefer newly acquired exact-date originals, including codes present in old seed.
+    by_code={r['code']:r for r in records}
     with pm01.CACHE_LOCK:
         cache = copy.deepcopy(pm01.HISTORY_MEMORY)
-    for code in codes - set(seed['daily']):
+    for code in codes:
         key = hashlib.sha256((code+s['d0']+','.join(s['base_dates'].values())).encode()).hexdigest()
         r = cache.get(key)
-        if r:
-            records.append({**r, 'code': code, 'adjustment': 'UNADJUSTED',
-                            'evidence': 'Original exact-date cache sha256='+hashlib.sha256(json.dumps(r,sort_keys=True).encode()).hexdigest()})
+        if r and r.get('adjustment')=='UNADJUSTED' and r.get('evidence'):
+            by_code[code]={**r,'code':code}
+    records=list(by_code.values())
     dates = calendar(s['d0'])
     ctx = context(seed, codes, dates, s['base_dates'])
     clock = pm01.now_cn()
@@ -75,10 +77,10 @@ def repair(snapshot):
             q['close_evidence'] = {'kind': 'PROVIDER_REPORTED_CLOSE', 'code': code,
                 'date': s['d0'], 'price': q['price'], 'source_timestamp': q['source_timestamp'],
                 'source': q['quote_source'], 'evidence': 'Original provider quote sha256='+hashlib.sha256(json.dumps(q,sort_keys=True).encode()).hexdigest()}
-    def no_extra_network(*args, **kwargs):
-        raise ValueError('VERIFIED_HISTORY_NOT_COVERED')
-    evidence = rank_evidence_provider(s, no_extra_network, ctx, records, mode=mode, asof=asof)
+    evidence = rank_evidence_provider(s, pm01.get, ctx, records, mode=mode, asof=asof, budget=90)
+    evidence = apply_facts(evidence, s['base_dates'], s['d0'], pm01.get, clock.isoformat())
     result = adapt_refresh(s, evidence, asof, mode=mode)
+    result['trace']['PER_PERIOD_ADAPTER']['event_diagnostics']=copy.deepcopy(evidence.get('event_diagnostics',[]))
     for ranked in result['top'].values():
         for row in ranked:
             account, reason = pm01.eligible(row['code'], row['name'])
