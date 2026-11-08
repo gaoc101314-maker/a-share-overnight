@@ -475,7 +475,7 @@ def freeze(snapshot, second='', leader=''):
     if s['leader_status']!='PASS': missing.append('LEADER_POOL:'+s['leader_status'])
     if s['same_snapshot']!='PASS': missing.append('SAME_SNAPSHOT_STATUS')
     s['input_freeze']='PASS' if not missing else 'FAIL'
-    s['ready']='YES' if not missing else 'NO'
+    s['ready']='YES' if not missing and s.get('view_scope')!='OFF_SESSION_RESEARCH' else 'NO'
     s['missing']=missing+se+le
     s['pool_metadata']={label:dict(SNAPSHOT_ID=s['bundle_id'],D0_DATE=s['d0'],SNAPSHOT_TIME=s['snapshot_time']) for label in ('3D_TOP50','5D_TOP50','10D_TOP50','SECOND_BOARD_POOL','LEADER_POOL')}
     s['top']={n:[{**r,**s['pool_metadata'][n+'D_TOP50']} for r in rows] for n,rows in s['top'].items()}
@@ -615,13 +615,14 @@ def refresh_for_display(progress=None, stage=None):
     mode='PRODUCTION' if live else 'CLOSE_MAINTENANCE' if trade and t>=walltime(15) else 'RESEARCH'
     try:
         if mode=='RESEARCH':
-            s=refresh(progress=progress,stage=stage,certified=True)
+            s=refresh(progress=progress,stage=stage)
             s['view_scope']='OFF_SESSION_RESEARCH'
             s['trace']['VIEW_SCOPE']={'mode':'RESEARCH','observed_at':now.isoformat(),
                 'quote_date':s.get('d0',''),'certification':'NOT_PRODUCTION_CERTIFIED'}
-            # Keep observed prices and source times; raw rankings are not certified Top50.
-            s['pool_status']={str(n):'PARTIAL' for n in PERIODS}
-            s['same_snapshot']='UNCERTIFIED_RESEARCH'
+            # Only the original evidence adapter can certify complete historical rankings.
+            if 'PER_PERIOD_ADAPTER' not in s.get('trace',{}):
+                s['pool_status']={str(n):'PARTIAL' for n in PERIODS}
+                s['same_snapshot']='UNCERTIFIED_RESEARCH'
             s['fresh']=False
             return s
         import importlib
@@ -642,7 +643,7 @@ def render():
     st.markdown('<style>h1 {font-size:28px !important;line-height:1.2 !important} .block-container {padding-top:2.5rem}</style>',unsafe_allow_html=True)
     st.title('A股 Production Reality')
     st.caption('PM01 五源输入')
-    st.caption('显示修复：2026-11-09 · 非交易时段研究查看 · 刷新异常可回读')
+    st.caption('显示修复：2026-11-09 · 上市停牌原证据接通 · 非交易时段只读研究')
     st.caption('只供给市场Reality；自动池的正式资格与数据缺口单独显示，公司粘贴池保留为对照入口。')
     from auto_pools import load_latest,render_status,connect
     auto_version=load_latest()
