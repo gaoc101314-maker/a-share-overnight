@@ -407,8 +407,10 @@ def refresh(progress=None, stage=None, certified=False):
         if stale or s['unpriced_codes']:
             s['errors'].append('NON_CURRENT_OR_UNPRICED_MARKET_QUOTES:'+str(len(stale)+len(s['unpriced_codes'])))
         if stage: stage('3/4 历史基准价：优先核验缓存，补缺阶段最多90秒')
-        from verified_web_history import prime
-        special=prime(d0,bases,[r['code'] for r in current])
+        import importlib
+        import verified_web_history
+        verified_web_history=importlib.reload(verified_web_history)
+        special=verified_web_history.prime(d0,bases,[r['code'] for r in current])
         def history_job(r):
             if r['code'] in special:
                 raise ValueError('PER_PERIOD_VERIFIED_EVIDENCE_REQUIRED')
@@ -439,8 +441,7 @@ def refresh(progress=None, stage=None, certified=False):
         s['same_snapshot']='PASS' if not s['errors'] else 'FAIL'
         s['history_complete_at']=now_cn().isoformat()
         if s.get('history_failures') and not certified:
-            from verified_web_history import repair
-            s=repair(s)
+            s=verified_web_history.repair(s)
     except Exception as e:
         s['errors'].append('DATA_SOURCE_FAILURE:'+type(e).__name__)
     return s
@@ -643,7 +644,7 @@ def render():
     st.markdown('<style>h1 {font-size:28px !important;line-height:1.2 !important} .block-container {padding-top:2.5rem}</style>',unsafe_allow_html=True)
     st.title('A股 Production Reality')
     st.caption('PM01 五源输入')
-    st.caption('显示修复：2026-11-09 · 上市停牌原证据接通 · 非交易时段只读研究')
+    st.caption('显示修复：2026-11-09 · 上市停牌原证据V2 · 非交易时段只读研究')
     st.caption('只供给市场Reality；自动池的正式资格与数据缺口单独显示，公司粘贴池保留为对照入口。')
     from auto_pools import load_latest,render_status,connect
     auto_version=load_latest()
