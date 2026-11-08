@@ -606,13 +606,43 @@ def apply_pool_scope(s,pool_mode):
     return s
 
 
+def refresh_for_display(progress=None, stage=None):
+    """Only live sessions use Production; off-session reads never gain certification."""
+    now=now_cn()
+    t=now.time().replace(tzinfo=None)
+    trade=trading_day(now.date().isoformat()) is True
+    live=trade and (walltime(9,30)<=t<walltime(11,30) or walltime(13)<=t<walltime(15))
+    mode='PRODUCTION' if live else 'CLOSE_MAINTENANCE' if trade and t>=walltime(15) else 'RESEARCH'
+    try:
+        if mode=='RESEARCH':
+            s=refresh(progress=progress,stage=stage,certified=True)
+            s['view_scope']='OFF_SESSION_RESEARCH'
+            s['trace']['VIEW_SCOPE']={'mode':'RESEARCH','observed_at':now.isoformat(),
+                'quote_date':s.get('d0',''),'certification':'NOT_PRODUCTION_CERTIFIED'}
+            # Keep observed prices and source times; raw rankings are not certified Top50.
+            s['pool_status']={str(n):'PARTIAL' for n in PERIODS}
+            s['same_snapshot']='UNCERTIFIED_RESEARCH'
+            s['fresh']=False
+            return s
+        import importlib
+        import certified_refresh
+        return importlib.reload(certified_refresh).refresh_certified(mode=mode,progress=progress,stage=stage)
+    except Exception as error:
+        s=blank_snapshot('REFRESH_CERTIFICATION_FAILED')
+        code=str(error)
+        safe_code=code if re.fullmatch(r'[A-Z0-9_:]{1,200}',code) else 'DETAILS_IN_SERVER_LOG'
+        s['trace']['REFRESH_FAILURE']={'mode':mode,'error_type':type(error).__name__,
+            'code':safe_code,'observed_at':now_cn().isoformat()}
+        return s
+
+
 def render():
     import streamlit as st
     import streamlit.components.v1 as components
     st.markdown('<style>h1 {font-size:28px !important;line-height:1.2 !important} .block-container {padding-top:2.5rem}</style>',unsafe_allow_html=True)
     st.title('A股 Production Reality')
     st.caption('PM01 五源输入')
-    st.caption('性能版本：2026-10-14 · 当天历史基准修复 · 刷新进度已接通')
+    st.caption('显示修复：2026-11-09 · 非交易时段研究查看 · 刷新异常可回读')
     st.caption('只供给市场Reality；自动池的正式资格与数据缺口单独显示，公司粘贴池保留为对照入口。')
     from auto_pools import load_latest,render_status,connect
     auto_version=load_latest()
@@ -657,11 +687,8 @@ def render():
                 bar.progress(min(done/max(total,1),1),text=f'{stage_name[0]} · {done}/{total} · {elapsed:.0f} 秒')
             # Reload this stateless adapter so a deployed evidence update takes
             # effect in an existing Streamlit process before a new collection.
-            import importlib
-            import certified_refresh
-            refresh_certified = importlib.reload(certified_refresh).refresh_certified
-            show_stage('核验全市场、精确历史日期及上市停牌证据；保留日期与新鲜度保护')
-            s=refresh_certified(mode='CLOSE_MAINTENANCE' if now_cn().time().replace(tzinfo=None)>=walltime(15) else 'PRODUCTION',progress=progress,stage=show_stage)
+            show_stage('交易时段核验正式输入；非交易时段只读研究行情，保留原日期')
+            s=refresh_for_display(progress=progress,stage=show_stage)
             st.session_state['pm01_snapshot']=s
             status.update(label='数据已取得' if not s['errors'] else '数据不完整；请查看缺失信息',state='complete' if not s['errors'] else 'error',expanded=False)
     snapshot=st.session_state.get('pm01_snapshot',blank_snapshot())
@@ -689,6 +716,7 @@ def render():
     with card.container(border=True):
         obtained=datetime.fromisoformat(s['snapshot_time']).strftime('%Y-%m-%d %H:%M:%S')
         st.write('行情日期：'+(s['d0'] or '等待刷新'))
+        if s.get('view_scope')=='OFF_SESSION_RESEARCH': st.info('非交易时段研究查看：保留来源实际日期；以下报价及排序未经正式生产认证。')
         st.caption('取得时间：'+obtained+' · UTC+8')
         universe_source=s['trace'].get('UNIVERSE',{}).get('DATA_SOURCE','NONE')
         st.caption('数据源：'+universe_source+'；行情/日线详情见来源审计')
@@ -698,7 +726,9 @@ def render():
         st.caption('当前：'+s['phase'])
         if s['research_mode']=='YES': st.warning('RESEARCH_MODE=YES · NOT_LIVE_PRODUCTION')
         if s['missing']: st.caption('五源尚未齐备；缺失明细随复制文本输出。')
-        if s['errors'] and s['errors']!=['NOT_REFRESHED']: st.error('数据状态=FAIL；当前数据不完整，请查看来源审计。')
+        if s['errors'] and s['errors']!=['NOT_REFRESHED']:
+            failure=s.get('trace',{}).get('REFRESH_FAILURE',{})
+            st.error('刷新未通过认证；未生成正式五源。原因：'+failure.get('code','数据不完整，请查看来源审计。'))
     def display_rows(rows,ranked=False):
         def value(v,digits):
             return f'{v:.{digits}f}' if isinstance(v,(float,int)) and math.isfinite(v) else 'UNKNOWN'
