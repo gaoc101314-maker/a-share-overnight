@@ -714,6 +714,7 @@ def render():
             for row in s[key]:row.update(evidence)
     if pool_mode=='自动维护池':
         s=connect(s,auto_version)
+    if s.get('view_scope')=='OFF_SESSION_RESEARCH': s['ready']='NO'
     s=apply_pool_scope(s,pool_mode)
     with card.container(border=True):
         obtained=datetime.fromisoformat(s['snapshot_time']).strftime('%Y-%m-%d %H:%M:%S')
