@@ -1,5 +1,7 @@
 """Reuse the original evidence adapter; no network or company-pool mutation."""
 import copy
+import base64
+import gzip
 import hashlib
 import json
 from datetime import datetime, time
@@ -80,7 +82,16 @@ def repair(snapshot):
     evidence = rank_evidence_provider(s, pm01.get, ctx, records, mode=mode, asof=asof, budget=90)
     evidence = apply_facts(evidence, s['base_dates'], s['d0'], pm01.get, clock.isoformat())
     result = adapt_refresh(s, evidence, asof, mode=mode)
-    result['trace']['PER_PERIOD_ADAPTER']['event_diagnostics']=copy.deepcopy(evidence.get('event_diagnostics',[]))
+    adapter=result['trace']['PER_PERIOD_ADAPTER']
+    adapter['event_diagnostics']=copy.deepcopy(evidence.get('event_diagnostics',[]))
+    adapter['repair_version']='2026-11-09-V2'
+    events=adapter.get('acquisition_diagnostics',[])
+    raw=json.dumps(events,ensure_ascii=False,separators=(',',':')).encode('utf8')
+    if len(raw)>3*1024*1024:
+        adapter['acquisition_diagnostics']={'encoding':'gzip+base64-json','event_count':len(events),
+            'uncompressed_bytes':len(raw),'uncompressed_sha256':hashlib.sha256(raw).hexdigest(),
+            'data':base64.b64encode(gzip.compress(raw,mtime=0)).decode('ascii'),
+            'readback_instruction':'Decode base64, decompress gzip, verify hash and event_count; no event removed'}
     for ranked in result['top'].values():
         for row in ranked:
             account, reason = pm01.eligible(row['code'], row['name'])
