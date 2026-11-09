@@ -512,6 +512,51 @@ def export_text(s):
 
 ORIGIN='https://a-share-reality-pm03.gaoc101314.chatgpt.site'
 
+def verify_registered_company_pool(value, day):
+    """Consume the existing formal membership registration; never certify prices."""
+    base=value.get('base') if isinstance(value,dict) else None
+    if not isinstance(base,dict): raise ValueError('CURRENT_FORMAL_POOL_UNAVAILABLE')
+    if value.get('scope')!='FORMAL_MATERIAL_MEMBERSHIP; FRESH_QUOTES_REQUIRED':
+        raise ValueError('CURRENT_FORMAL_POOL_SCOPE_INVALID')
+    if (base.get('production_qualified') is not True or
+        base.get('policy_id')!='COMPANY_MATERIAL_POOLS_V1_20261021' or
+        not base.get('approval_date') or not base.get('approval_scope') or
+        not (base.get('valid_from','9999')<=day<=base.get('valid_through','0000')) or
+        base.get('membership_asof','9999')>day):
+        raise ValueError('CURRENT_FORMAL_POOL_NOT_VALID')
+    for key in ('second','leader'):
+        codes=base.get(key)
+        if not isinstance(codes,list) or not codes or len(codes)!=len(set(codes)) or any(not isinstance(c,str) or not re.fullmatch(r'\d{6}',c) for c in codes):
+            raise ValueError('CURRENT_FORMAL_POOL_CODES_INVALID')
+    keys=('membership_asof','second','leader','policy_id','handoff_id','maintenance_evidence_version','window_dates')
+    try: facts={k:base[k] for k in keys}
+    except KeyError: raise ValueError('CURRENT_FORMAL_POOL_EVIDENCE_MISSING') from None
+    digest=hashlib.sha256(json.dumps(facts,sort_keys=True,ensure_ascii=False,separators=(',',':')).encode('utf8')).hexdigest()
+    if base.get('source_sha256')!=digest or base.get('source_version')!='COMPANY-MAINTAINED-'+base['membership_asof']+'-'+digest[:24]:
+        raise ValueError('CURRENT_FORMAL_POOL_HASH_MISMATCH')
+    return {**base,'second':'\n'.join(base['second']),'leader':'\n'.join(base['leader']),
+            'source_date':base['membership_asof'],'scope':'FORMAL_MATERIAL_MEMBERSHIP; FRESH_QUOTES_REQUIRED'}
+
+
+def read_registered_company_pool(day, token, session=None):
+    if not token: raise ValueError('HANDOFF_AUTH_NOT_CONFIGURED')
+    client=session or requests.Session()
+    own=session is None
+    if own: client.trust_env=False
+    try:
+        values=[]
+        for _ in range(2):
+            response=client.get(ORIGIN+'/maintenance/company-base',params={'date':day},
+                headers={'OAI-Sites-Authorization':'Bearer '+token},timeout=(10,20),allow_redirects=False)
+            if response.status_code!=200: raise ValueError('CURRENT_FORMAL_POOL_READ_HTTP_'+str(response.status_code))
+            values.append(verify_registered_company_pool(response.json(),day))
+        if values[0]!=values[1]: raise ValueError('CURRENT_FORMAL_POOL_CHANGED_DURING_READBACK')
+        return {**values[0],'independent_readback':'VERIFIED'}
+    except requests.RequestException:
+        raise ValueError('CURRENT_FORMAL_POOL_NETWORK_UNCONFIRMED') from None
+    finally:
+        if own: client.close()
+
 def archive_snapshot(snapshot, token, session=None):
     if not token: raise ValueError('HANDOFF_AUTH_NOT_CONFIGURED')
     raw=json.dumps(snapshot,ensure_ascii=False,separators=(',',':')).encode('utf-8')
@@ -645,11 +690,11 @@ def render():
     st.markdown('<style>h1 {font-size:28px !important;line-height:1.2 !important} .block-container {padding-top:2.5rem}</style>',unsafe_allow_html=True)
     st.title('A股 Production Reality')
     st.caption('PM01 五源输入')
-    st.caption('显示修复：2026-11-09 · 上市停牌原证据V2 · 非交易时段只读研究')
+    st.caption('显示修复：2026-11-09 · 当日有效维护名单V3 · 非交易时段只读研究')
     st.caption('只供给市场Reality；自动池的正式资格与数据缺口单独显示，公司粘贴池保留为对照入口。')
     from auto_pools import load_latest,render_status,connect
     auto_version=load_latest()
-    pool_mode=st.radio('认证池来源',['自动维护池','公司当日正式池（待接通）','9月30日历史参考','公司粘贴池'],horizontal=True)
+    pool_mode=st.radio('认证池来源',['公司当日正式池','自动维护池','9月30日历史参考','公司粘贴池'],horizontal=True)
     formal=None
     if pool_mode=='9月30日历史参考':
         try:
@@ -658,8 +703,6 @@ def render():
             st.caption('历史参考来源：'+formal['source_version']+'；成员日期仍为9月30日，仅供研究对照，不是今日正式池。')
         except (OSError,ValueError,KeyError) as error:
             st.error('正式成员来源核验失败：'+str(error)+'；不会替换为研究池。')
-    if pool_mode=='公司当日正式池（待接通）':
-        st.warning('当日正式池尚未接通；不回退9月30日历史成员，不把研究池转为正式池。')
     if pool_mode=='自动维护池':
         render_status(st,auto_version)
         if auto_version and auto_version.get('snapshot') and not st.session_state.get('pm01_snapshot',{}).get('d0'):
@@ -700,15 +743,33 @@ def render():
         date_key='pm01_input_day_'+key
         if snapshot['d0'] and st.session_state.get(date_key) is None:
             st.session_state[date_key]=snapshot['d0']
-        if snapshot['d0'] and st.session_state.get(date_key)!=snapshot['d0']:
+        if pool_mode=='公司粘贴池' and snapshot['d0'] and st.session_state.get(date_key)!=snapshot['d0']:
             inputs[key]=''
             st.warning(('二板总池' if key=='second' else '总龙头池')+'日期已变化：请重新粘贴本次D0的公司正式池。')
     second,leader=inputs['second'],inputs['leader']
+    if pool_mode=='公司当日正式池':
+        second,leader='',''
+        day=snapshot.get('d0')
+        if day and day==now_cn().date().isoformat():
+            try:
+                cached=st.session_state.get('pm01_registered_company_pool',{})
+                if refresh_clicked or cached.get('read_day')!=day:
+                    formal=read_registered_company_pool(day,st.secrets.get('PM01_HANDOFF_SITE_TOKEN',''))
+                    st.session_state['pm01_registered_company_pool']={**formal,'read_day':day}
+                else: formal=cached
+                second,leader=formal['second'],formal['leader']
+                st.caption('维护成员日期：'+formal['source_date']+'；原登记有效至：'+formal['valid_through']+'；名单独立回读通过。行情日期仍为'+day+'。')
+            except (ValueError,FileNotFoundError) as error:
+                st.error('当日有效维护名单未接通：'+(str(error)[:100] if isinstance(error,ValueError) else 'HANDOFF_AUTH_NOT_CONFIGURED')+'；不使用研究池替代。')
+        elif day:
+            st.warning('当前行情不是今天，先刷新行情；不会把历史成员或旧行情改标为当日生产。')
     if pool_mode=='9月30日历史参考':
         second,leader=(formal['second'],formal['leader']) if formal else ('','')
     s=freeze(snapshot,second,leader)
     if formal:
         s['trace']['COMPANY_POOL_SOURCE']={k:formal[k] for k in ('source_version','source_date','scope')}
+        if pool_mode=='公司当日正式池':
+            s['trace']['COMPANY_POOL_SOURCE'].update({k:formal[k] for k in ('source_sha256','membership_asof','valid_from','valid_through','policy_id','handoff_id','maintenance_evidence_version','approval_date','approval_scope','independent_readback')})
         for key,label in [('second','SECOND_BOARD_POOL'),('leader','LEADER_POOL')]:
             evidence={'POOL_SOURCE_VERSION':formal['source_version'],'POOL_SOURCE_DATE':formal['source_date'],'POOL_MEMBERSHIP_SCOPE':formal['scope']}
             s['pool_metadata'][label].update(evidence)
@@ -779,5 +840,3 @@ def render():
         render_blind(st,s,progress if refresh_clicked else None)
     else:
         st.info('已载入研究池摘要。点击刷新取得最新行情与完整路径；首次打开不自动下载旧日期分时。研究摘要不代表当天Production可用。')
-
-
