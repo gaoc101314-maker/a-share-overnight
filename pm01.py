@@ -486,6 +486,7 @@ def freeze(snapshot, second='', leader=''):
     # Freshness is rechecked when copying/displaying, not just at acquisition.
     if s['research_mode']=='NO' and (now_cn()-datetime.fromisoformat(s['snapshot_time'])).total_seconds()>300:
         s['research_mode']='YES'
+    if s['research_mode']!='NO': s['ready']='NO'
     return s
 
 
@@ -776,7 +777,7 @@ def render():
             for row in s[key]:row.update(evidence)
     if pool_mode=='自动维护池':
         s=connect(s,auto_version)
-    if s.get('view_scope')=='OFF_SESSION_RESEARCH': s['ready']='NO'
+    if s.get('view_scope')=='OFF_SESSION_RESEARCH' or s.get('research_mode')!='NO': s['ready']='NO'
     s=apply_pool_scope(s,pool_mode)
     with card.container(border=True):
         obtained=datetime.fromisoformat(s['snapshot_time']).strftime('%Y-%m-%d %H:%M:%S')
